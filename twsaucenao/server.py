@@ -1,10 +1,11 @@
+import asyncio
 import hashlib
 import logging
 import reprlib
 from typing import *
 
 import tweepy
-from pysaucenao import GenericSource, SauceNao
+from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException
 
 from twsaucenao.api import twitter_api
 from twsaucenao.errors import *
@@ -54,9 +55,17 @@ class TwitterSauce:
             return self._cached_results[url_hash]
 
         # Look up the sauce
-        sauce = await self.sauce.from_url(media['media_url_https'])
-        if not sauce.results:
-            self._cached_results[url_hash] = None
+        try:
+            sauce = await self.sauce.from_url(media['media_url_https'])
+            if not sauce.results:
+                self._cached_results[url_hash] = None
+                return None
+        except ShortLimitReachedException:
+            self.log.warning("Short API limit reached, throttling for 30 seconds")
+            await asyncio.sleep(30.0)
+            return await self.get_sauce(media)
+        except SauceNaoException as e:
+            self.log.error(f"SauceNao exception raised: {e}")
             return None
 
         self._cached_results[url_hash] = sauce[0]
