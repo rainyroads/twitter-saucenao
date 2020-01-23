@@ -12,7 +12,7 @@ from twsaucenao.errors import *
 
 class TwitterSauce:
     def __init__(self):
-        self._log = logging.getLogger(__name__)
+        self.log = logging.getLogger(__name__)
         self.api = twitter_api()
         self.sauce = SauceNao()
 
@@ -25,7 +25,7 @@ class TwitterSauce:
 
     # noinspection PyBroadException
     async def check_mentions(self) -> None:
-        self._log.info(f"Retrieving mentions since tweet {self.since_id}")
+        self.log.info(f"Retrieving mentions since tweet {self.since_id}")
 
         mentions = [*tweepy.Cursor(self.api.mentions_timeline, since_id=self.since_id).items()]  # type: List[tweepy.models.Status]
 
@@ -38,10 +38,10 @@ class TwitterSauce:
                 sauce = await self.get_sauce(media[0])
                 self.send_reply(tweet, sauce)
             except TwSauceNoMediaException:
-                self._log.info(f"Skipping tweet {tweet.id}")
+                self.log.info(f"Skipping tweet {tweet.id}")
                 continue
             except Exception:
-                self._log.exception(f"An unknown error occurred while processing tweet {tweet.id}")
+                self.log.exception(f"An unknown error occurred while processing tweet {tweet.id}")
                 continue
 
     async def get_sauce(self, media: dict) -> Optional[GenericSource]:
@@ -67,6 +67,7 @@ class TwitterSauce:
         Return the source of the image
         """
         if sauce is None:
+            self.log.info(f"Failed to find sauce for tweet {tweet.id}")
             self.api.update_status(
                     f"@{tweet.author.screen_name} Sorry, I couldn't find anything for you 😔",
                     in_reply_to_status_id=tweet.id
@@ -77,6 +78,7 @@ class TwitterSauce:
         repr = reprlib.Repr()
         repr.maxstring = 32
 
+        self.log.info(f"Found {sauce.index} sauce for tweet {tweet.id}")
         reply = f"@{tweet.author.screen_name} I found something for you on {sauce.index}!\n\nTitle: {repr.repr(sauce.title)}\nAuthor: {repr.repr(sauce.author_name)}\n{sauce.source_url}"
         self.api.update_status(reply, in_reply_to_status_id=tweet.id)
 
@@ -101,7 +103,7 @@ class TwitterSauce:
             try:
                 media = tweet.entities['media']  # type: List[dict]
             except KeyError:
-                self._log.warning(f"Tweet {tweet.id} does not have any downloadable media")
+                self.log.warning(f"Tweet {tweet.id} does not have any downloadable media")
                 raise TwSauceNoMediaException
 
         return media
@@ -111,10 +113,10 @@ class TwitterSauce:
         If we were mentioned in a reply, we want to get the sauce to the message we replied to
         """
         try:
-            self._log.info(f"Looking up tweet ID {tweet.id}")
+            self.log.info(f"Looking up tweet ID {tweet.id}")
             parent = self.api.get_status(id)
         except tweepy.TweepError:
-            self._log.warning(f"Tweet {tweet.id} no longer exists or we don't have permission to view it")
+            self.log.warning(f"Tweet {tweet.id} no longer exists or we don't have permission to view it")
             raise TwSauceNoMediaException
 
         # No we have a direct tweet to parse!
