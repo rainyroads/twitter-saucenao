@@ -8,7 +8,7 @@ async def main():
     while True:
         await twitter.check_mentions()
         twitter.log.info("Waiting...")
-        await asyncio.sleep(10.0)
+        await asyncio.sleep(15.0)
 
 
 if __name__ == '__main__':
