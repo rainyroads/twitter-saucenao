@@ -113,10 +113,10 @@ class TwitterSauce:
         If we were mentioned in a reply, we want to get the sauce to the message we replied to
         """
         try:
-            self.log.info(f"Looking up tweet ID {tweet.id}")
-            parent = self.api.get_status(id)
+            self.log.info(f"Looking up tweet ID {tweet.in_reply_to_status_id}")
+            parent = self.api.get_status(tweet.in_reply_to_status_id)
         except tweepy.TweepError:
-            self.log.warning(f"Tweet {tweet.id} no longer exists or we don't have permission to view it")
+            self.log.warning(f"Tweet {tweet.in_reply_to_status_id} no longer exists or we don't have permission to view it")
             raise TwSauceNoMediaException
 
         # No we have a direct tweet to parse!
