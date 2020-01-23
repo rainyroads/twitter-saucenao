@@ -1,0 +1,2 @@
+class TwSauceNoMediaException(Exception):
+    pass
