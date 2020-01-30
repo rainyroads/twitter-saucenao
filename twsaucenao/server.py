@@ -5,7 +5,7 @@ import reprlib
 from typing import *
 
 import tweepy
-from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException
+from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource
 
 from twsaucenao.api import twitter_api
 from twsaucenao.errors import *
@@ -88,7 +88,21 @@ class TwitterSauce:
         repr.maxstring = 32
 
         self.log.info(f"Found {sauce.index} sauce for tweet {tweet.id}")
-        reply = f"@{tweet.author.screen_name} I found something for you on {sauce.index}!\n\nTitle: {repr.repr(sauce.title)}\nAuthor: {repr.repr(sauce.author_name)}\n{sauce.source_url}"
+
+        title = repr.repr(sauce.title).strip("'")
+        reply = f"@{tweet.author.screen_name} I found something for you on {sauce.index}!\n\nTitle: {title}"
+
+        if sauce.author_name:
+            author = repr.repr(sauce.author_name).strip("'")
+            reply += f"\nAuthor: {author}"
+
+        if isinstance(sauce, VideoSource):
+            if sauce.episode:
+                reply += f"\nEpisode: {sauce.episode}"
+            if sauce.timestamp:
+                reply += f"\nTimestamp: {sauce.timestamp}"
+
+        reply += f"\n{sauce.source_url}"
         self.api.update_status(reply, in_reply_to_status_id=tweet.id)
 
     # noinspection PyUnresolvedReferences
