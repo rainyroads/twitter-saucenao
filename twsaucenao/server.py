@@ -71,16 +71,24 @@ class TwitterSauce:
         self._cached_results[url_hash] = sauce[0]
         return sauce[0]
 
-    def send_reply(self, tweet: tweepy.models.Status, sauce: Optional[GenericSource]) -> None:
+    def send_reply(self, tweet: tweepy.models.Status, sauce: Optional[GenericSource], requested=True) -> None:
         """
         Return the source of the image
+        Args:
+            tweet (tweepy.models.Status): The tweet to reply to
+            sauce (Optional[GenericSource]): The sauce found (or None if nothing was found)
+            requested (bool): True if the lookup was requested, or False if this is a monitored user account
+
+        Returns:
+            None
         """
         if sauce is None:
             self.log.info(f"Failed to find sauce for tweet {tweet.id}")
-            self.api.update_status(
-                    f"@{tweet.author.screen_name} Sorry, I couldn't find anything for you 😔",
-                    in_reply_to_status_id=tweet.id
-            )
+            if requested:
+                self.api.update_status(
+                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything for you 😔",
+                        in_reply_to_status_id=tweet.id
+                )
             return
 
         # For limiting the length of the title/author
@@ -90,7 +98,10 @@ class TwitterSauce:
         self.log.info(f"Found {sauce.index} sauce for tweet {tweet.id}")
 
         title = repr.repr(sauce.title).strip("'")
-        reply = f"@{tweet.author.screen_name} I found something for you on {sauce.index}!\n\nTitle: {title}"
+        if requested:
+            reply = f"@{tweet.author.screen_name} I found something for you on {sauce.index}!\n\nTitle: {title}"
+        else:
+            reply = f"I found the source of this on {sauce.index}!\n\nTitle: {title}"
 
         if sauce.author_name:
             author = repr.repr(sauce.author_name).strip("'")
@@ -103,6 +114,9 @@ class TwitterSauce:
                 reply += f"\nTimestamp: {sauce.timestamp}"
 
         reply += f"\n{sauce.source_url}"
+
+        if not requested:
+            reply += f"\n\nI can help you look up the sauce to images elsewhere too! Just mention me in a reply to an image you want to look up."
         self.api.update_status(reply, in_reply_to_status_id=tweet.id)
 
     # noinspection PyUnresolvedReferences
