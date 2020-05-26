@@ -20,6 +20,7 @@ class TwitterSauce:
 
         # Cache some information about ourselves
         self.my = self.api.me()
+        self.log.info(f"Connected as: {self.my.screen_name}")
 
         # Image URL's are md5 hashed and cached here to prevent duplicate API queries. This is cleared every 24-hours.
         # I'll update this in the future to use a real caching mechanism (database or redis)
@@ -210,6 +211,11 @@ class TwitterSauce:
         """
         try:
             while tweet.in_reply_to_status_id:
+                # If this is a post by the SauceNao bot, abort, as it means we've already responded to this thread
+                if tweet.author.id == self.my.id:
+                    self.log.debug(f"We've already responded to this comment thread, aborting")
+                    raise TwSauceNoMediaException
+
                 # Get the parent comment / tweet
                 self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
                 tweet = self.api.get_status(tweet.in_reply_to_status_id)
