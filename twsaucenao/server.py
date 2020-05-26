@@ -18,6 +18,9 @@ class TwitterSauce:
         self.api = twitter_api()
         self.sauce = SauceNao()
 
+        # Cache some information about ourselves
+        self.my = self.api.me()
+
         # Image URL's are md5 hashed and cached here to prevent duplicate API queries. This is cleared every 24-hours.
         # I'll update this in the future to use a real caching mechanism (database or redis)
         self._cached_results = {}
@@ -33,23 +36,30 @@ class TwitterSauce:
         Returns:
             None
         """
-        self.log.info(f"Retrieving mentions since tweet {self.since_id}")
+        self.log.info(f"[{self.my.screen_name}] Retrieving mentions since tweet {self.since_id}")
 
-        mentions = [*tweepy.Cursor(self.api.mentions_timeline, since_id=self.since_id).items()]  # type: List[tweepy.models.Status]
+        mentions = [*tweepy.Cursor(self.api.mentions_timeline, since_id=self.since_id).items()]
 
         # Filter tweets without a reply AND attachment
         for tweet in mentions:
             try:
                 # Update the ID cutoff before attempting to parse the tweet
                 self.since_id = max([self.since_id, tweet.id])
+                self.log.debug(f"[{self.my.screen_name}] New max ID cutoff: {self.since_id}")
+
+                # Make sure we aren't mentioning ourselves
+                if tweet.author.id == self.my.id:
+                    self.log.debug(f"[{self.my.screen_name}] Ignoring a self-mentioning tweet")
+                    continue
+
                 media = self.parse_tweet_media(tweet)
                 sauce = await self.get_sauce(media[0])
                 self.send_reply(tweet, sauce)
             except TwSauceNoMediaException:
-                self.log.info(f"Skipping tweet {tweet.id}")
+                self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
             except Exception:
-                self.log.exception(f"An unknown error occurred while processing tweet {tweet.id}")
+                self.log.exception(f"[{self.my.screen_name}] An unknown error occurred while processing tweet {tweet.id}")
                 continue
 
     async def check_monitored(self) -> None:
@@ -199,11 +209,23 @@ class TwitterSauce:
         If we were mentioned in a reply, we want to get the sauce to the message we replied to
         """
         try:
-            self.log.info(f"Looking up tweet ID {tweet.in_reply_to_status_id}")
-            parent = self.api.get_status(tweet.in_reply_to_status_id)
+            while tweet.in_reply_to_status_id:
+                # Get the parent comment / tweet
+                self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
+                tweet = self.api.get_status(tweet.in_reply_to_status_id)
+
+                # Any media content in this tweet?
+                if 'media' in tweet.entities:
+                    self.log.info(f"Media content found in tweet {tweet.id}")
+                    break
+
+                if hasattr(tweet, 'extended_entities') and 'media' in tweet.extended_entities:
+                    self.log.info(f"Media content found in tweet {tweet.id}")
+                    break
+
         except tweepy.TweepError:
             self.log.warning(f"Tweet {tweet.in_reply_to_status_id} no longer exists or we don't have permission to view it")
             raise TwSauceNoMediaException
 
-        # No we have a direct tweet to parse!
-        return self._parse_direct(parent)
+        # Now we have a direct tweet to parse!
+        return self._parse_direct(tweet)
