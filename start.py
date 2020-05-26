@@ -9,6 +9,7 @@ async def main():
     while True:
         try:
             await twitter.check_mentions()
+            await twitter.check_monitored()
             twitter.log.info("Waiting...")
             await asyncio.sleep(15.0)
         except:
