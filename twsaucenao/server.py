@@ -26,8 +26,12 @@ class TwitterSauce:
         # I'll update this in the future to use a real caching mechanism (database or redis)
         self._cached_results = {}
 
+        # Search query (optional)
+        self.search_query = str(config.get('Twitter', 'monitored_keyword'))
+
         # The ID cutoff, we populate this once via an initial query at startup
         self.since_id = max([t.id for t in [*tweepy.Cursor(self.api.mentions_timeline).items()]]) or 1
+        self.query_since = 0
         self.monitored_since = {}
 
     # noinspection PyBroadException
@@ -81,7 +85,7 @@ class TwitterSauce:
                 # If not, get the last tweet ID from this account and wait for the next post
                 tweet = next(tweepy.Cursor(self.api.user_timeline, account, page=1).items())
                 self.monitored_since[account] = tweet.id
-                self.log.info(f"Monitoring tweets after {tweet.id} for account {account}")
+                self.log.info(f"[{account}] Monitoring tweets after {tweet.id}")
                 return
 
             # Get all tweets since our last check
@@ -107,6 +111,50 @@ class TwitterSauce:
                 except Exception:
                     self.log.exception(f"[{account}] An unknown error occurred while processing tweet {tweet.id}")
                     continue
+
+    async def check_query(self) -> None:
+        """
+        Performs a search query for a specific key-phrase (e.g. "sauce pls") and attempts to find the source of the
+        image for someone. It's a really wild buckshot method of operating, but it could have potential use!
+        Returns:
+            None
+        """
+        if not self.search_query:
+            self.log.debug("[SEARCH] Search query monitoring disabled")
+            return
+
+        search_results = self.api.search(self.search_query, result_type='recent', count=10, include_entities=True,
+                                         since_id=self.query_since)
+
+        # Populate the starting max ID
+        if not self.query_since:
+            self.query_since = search_results[0].id
+            self.log.info(f"[SEARCH] Monitoring tweets after {self.query_since} for search query: {self.search_query}")
+            return
+
+        # Iterate and process the search results
+        for tweet in search_results:
+            # Make sure we aren't searching ourselves somehow
+            if tweet.author.id == self.my.id:
+                self.log.debug(f"[SEARCH] Ignoring a self-tweet")
+                continue
+
+            try:
+                # Update the ID cutoff before attempting to parse the tweet
+                self.query_since = max([self.query_since, tweet.id])
+
+                self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
+                media = self.parse_tweet_media(tweet)
+                self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]['media_url_https']}")
+
+                sauce = await self.get_sauce(media[0])
+                self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
+                              else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
+
+                self.send_reply(tweet, sauce, False)
+            except TwSauceNoMediaException:
+                self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
+                continue
 
     async def get_sauce(self, media: dict) -> Optional[GenericSource]:
         """
