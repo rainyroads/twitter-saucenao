@@ -97,6 +97,11 @@ class TwitterSauce:
                     # Update the ID cutoff before attempting to parse the tweet
                     self.monitored_since[account] = max([self.monitored_since[account], tweet.id])
 
+                    # Make sure this isn't a comment / reply
+                    if tweet.in_reply_to_status_id:
+                        self.log.info(f"[{account}] Tweet is a reply/comment; ignoring")
+                        continue
+
                     media = self.parse_tweet_media(tweet)
                     self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]['media_url_https']}")
 
