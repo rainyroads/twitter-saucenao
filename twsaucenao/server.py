@@ -26,6 +26,10 @@ class TwitterSauce:
         # I'll update this in the future to use a real caching mechanism (database or redis)
         self._cached_results = {}
 
+        # A cached list of ID's for parent posts we've already processed
+        # Used in the check_monitored() method to prevent re-posting sauces when posts are re-tweeted
+        self._posts_processed = []
+
         # Search query (optional)
         self.search_query = str(config.get('Twitter', 'monitored_keyword'))
 
@@ -101,6 +105,12 @@ class TwitterSauce:
                     if tweet.in_reply_to_status_id:
                         self.log.info(f"[{account}] Tweet is a reply/comment; ignoring")
                         continue
+
+                    # Make sure we haven't already processed this post
+                    if tweet.id in self._posts_processed:
+                        self.log.info(f"[{account}] Post has already been processed; ignoring")
+                        continue
+                    self._posts_processed.append(tweet.id)
 
                     media = self.parse_tweet_media(tweet)
                     self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]['media_url_https']}")
