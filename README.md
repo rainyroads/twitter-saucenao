@@ -9,8 +9,9 @@ https://twitter.com/saucenaopls
 ## Officially monitored accounts
 These accounts are currently monitored by saucenaopls on Twitter. If you’d like to have your account monitored so I can provide automatic sauce lookups for you, just send me a DM on twitter or open an issue here and I’ll add you! No compensation is required, but a shoutout to the bot project is appreciated!
 
-* @MeguminBot_ (Officially endorsed)
+* [@MeguminBot_](https://twitter.com/MeguminBot_) (Officially endorsed)
 * @WaifuMenu (Unofficial)
+* @WaifuSupply (Unofficial)
 * @EcchiSociety (Unofficial)
 * @Kawaii_TL (Unofficial)
 * @TweetingWaifus (Unofficial)
