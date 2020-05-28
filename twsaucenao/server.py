@@ -112,6 +112,11 @@ class TwitterSauce:
                         continue
                     self._posts_processed.append(tweet.id)
 
+                    # Make sure this isn't a re-tweet
+                    if tweet.retweeted:
+                        self.log.info(f"[{account}] Retweeted post; ignoring")
+                        continue
+
                     media = self.parse_tweet_media(tweet)
                     self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]['media_url_https']}")
 
