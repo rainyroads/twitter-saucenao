@@ -24,6 +24,7 @@ Why? I honestly don’t know! I’m afraid I don’t understand the mindset of t
 Here is a list of Twitter accounts that have blocked the official @saucenaopls bot. Unfortunately, this means the official bot cannot respond to any inquiries made by these accounts. You can still have your own bot track these accounts, but they’re likely to block you as well!
 
 * @LewdRealm (Blocked 05/27/2020)
+* @WaifuSupply (Blocked 05/28/2020)
 
 ## Officially monitored keyphrase
 I’ve added experimental support for monitoring twitter for anyone who asks “sauce pls” and will try and reply with the sauce of the post if possible!
