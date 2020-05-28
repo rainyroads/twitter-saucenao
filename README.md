@@ -14,6 +14,7 @@ These accounts are currently monitored by saucenaopls on Twitter. If you’d lik
 * @EcchiSociety (Unofficial)
 * @Kawaii_TL (Unofficial)
 * @TweetingWaifus (Unofficial)
+* @Mangadoujins (Unofficial)
 
 ## Blocked by
 Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit whatsoever.
