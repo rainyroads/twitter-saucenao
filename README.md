@@ -41,7 +41,7 @@ Once you’ve registered an account for the bot, you can register an application
 
 https://developer.twitter.com/en/apps
 
-Keep in mind you may need to go through an application reviewer process first, which could take a few days.
+Keep in mind you may need to go through an application reviewal process with Twitter first, which could take a few days.
 
 Once you’ve got this set up, you can find all the keys and tokens needed in the config.ini file from your application page.
 
