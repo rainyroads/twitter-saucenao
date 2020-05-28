@@ -20,7 +20,7 @@ Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-sp
 
 Why? I honestly don’t know! I’m afraid I don’t understand the mindset of these people either.
 
-Here is a list of Twitter accounts that have blocked the official @saucenaopls bot. Unfortunately, this means the official bot cannot respond to any inquiries made by these accounts. You can still have your own bot track these accounts, but they’re likely to block you as well!
+Here is a list of Twitter accounts that have blocked the official @saucenaopls bot. Unfortunately, this means the official bot cannot respond to any inquiries on posts made by these accounts. You can still have your own bot track these accounts, but they’re likely to block you as well!
 
 * @LewdRealm (Blocked 05/27/2020)
 * @WaifuSupply (Blocked 05/28/2020)
