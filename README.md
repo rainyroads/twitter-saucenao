@@ -11,7 +11,6 @@ These accounts are currently monitored by saucenaopls on Twitter. If you’d lik
 
 * [@MeguminBot_](https://twitter.com/MeguminBot_) (Officially endorsed)
 * @WaifuMenu (Unofficial)
-* @WaifuSupply (Unofficial)
 * @EcchiSociety (Unofficial)
 * @Kawaii_TL (Unofficial)
 * @TweetingWaifus (Unofficial)
