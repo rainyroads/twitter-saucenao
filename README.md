@@ -11,19 +11,20 @@ These accounts are currently monitored by saucenaopls on Twitter. If you’d lik
 
 * [@MeguminBot_](https://twitter.com/MeguminBot_) (Officially endorsed)
 * @WaifuMenu (Unofficial)
-* @WaifuSupply (Unofficial)
 * @EcchiSociety (Unofficial)
 * @Kawaii_TL (Unofficial)
 * @TweetingWaifus (Unofficial)
+* @Mangadoujins (Unofficial)
 
 ## Blocked by
 Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit whatsoever.
 
 Why? I honestly don’t know! I’m afraid I don’t understand the mindset of these people either.
 
-Here is a list of Twitter accounts that have blocked the official @saucenaopls bot. Unfortunately, this means the official bot cannot respond to any inquiries made by these accounts. You can still have your own bot track these accounts, but they’re likely to block you as well!
+Here is a list of Twitter accounts that have blocked the official @saucenaopls bot. Unfortunately, this means the official bot cannot respond to any inquiries on posts made by these accounts. You can still have your own bot track these accounts, but they’re likely to block you as well!
 
 * @LewdRealm (Blocked 05/27/2020)
+* @WaifuSupply (Blocked 05/28/2020)
 
 ## Officially monitored keyphrase
 I’ve added experimental support for monitoring twitter for anyone who asks “sauce pls” and will try and reply with the sauce of the post if possible!
@@ -41,7 +42,7 @@ Once you’ve registered an account for the bot, you can register an application
 
 https://developer.twitter.com/en/apps
 
-Keep in mind you may need to go through an application reviewer process first, which could take a few days.
+Keep in mind you may need to go through an application reviewal process with Twitter first, which could take a few days.
 
 Once you’ve got this set up, you can find all the keys and tokens needed in the config.ini file from your application page.
 
