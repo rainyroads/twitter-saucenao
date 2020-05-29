@@ -113,7 +113,7 @@ class TwitterSauce:
                     self._posts_processed.append(tweet.id)
 
                     # Make sure this isn't a re-tweet
-                    if tweet.retweeted:
+                    if tweet.retweeted or 'RT @' in tweet.text:
                         self.log.info(f"[{account}] Retweeted post; ignoring")
                         continue
 
