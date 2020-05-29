@@ -294,7 +294,7 @@ class TwitterSauce:
                 # parent tweet ID and see if we're mentioned anywhere in it. If we are, don't reply again.
                 if f'@{self.my.screen_name}' in tweet.text:
                     self.log.info("This is a reply to a mention, not the original mention; ignoring")
-                    return
+                    raise TwSauceNoMediaException
 
                 # Any media content in this tweet?
                 if 'media' in tweet.entities:
