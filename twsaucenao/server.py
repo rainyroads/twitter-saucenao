@@ -90,7 +90,7 @@ class TwitterSauce:
                 tweet = next(tweepy.Cursor(self.api.user_timeline, account, page=1).items())
                 self.monitored_since[account] = tweet.id
                 self.log.info(f"[{account}] Monitoring tweets after {tweet.id}")
-                return
+                continue
 
             # Get all tweets since our last check
             self.log.info(f"[{account}] Retrieving tweets since {self.monitored_since[account]}")
