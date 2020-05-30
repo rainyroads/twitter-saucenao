@@ -225,7 +225,10 @@ class TwitterSauce:
         repr = reprlib.Repr()
         repr.maxstring = 32
 
-        title = repr.repr(sauce.title).strip("'")
+        # H-Misc doesn't have a source to link to, so we need to try and provide the full title
+        if sauce.index != 'H-Misc':
+            title = repr.repr(sauce.title).strip("'")
+
         if requested:
             reply = f"@{tweet.author.screen_name} I found something for you on {sauce.index}!\n\nTitle: {title}"
         else:
