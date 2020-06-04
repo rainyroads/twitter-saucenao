@@ -16,7 +16,7 @@ class TwitterSauce:
     def __init__(self):
         self.log = logging.getLogger(__name__)
         self.api = twitter_api()
-        self.sauce = SauceNao()
+        self.sauce = SauceNao(api_key=config.get('SauceNao', 'api_key', fallback=None))
 
         # Cache some information about ourselves
         self.my = self.api.me()
