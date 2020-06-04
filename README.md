@@ -48,6 +48,22 @@ Once you’ve got this set up, you can find all the keys and tokens needed in th
 
 This is all you really need to get started, assuming you just want to function as a standard bot that replies to mentions.
 
+### Registering a SauceNAO API key
+This is not required to get the bot up and running, but if you do not specify an API key, the bot will be limited to 100 API queries per-day.
+
+Freely registered accounts have a limit of 200 per day, and SauceNAO supporters have a limit of 5000 queries per day.
+
+You can register for an API key here:
+
+https://saucenao.com/user.php?page=search-api
+
+Then add the following to your config.ini,
+
+```ini
+[SauceNao]
+api_key: YOUR_API_KEY_HERE
+```
+
 ### Monitoring accounts
 If you want to use the bot to monitor your own account(s) and provide the sauce of things you post automatically, you can use the **monitored_accounts** configuration variable.
 
