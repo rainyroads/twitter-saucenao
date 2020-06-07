@@ -215,8 +215,11 @@ class TwitterSauce:
         """
         if sauce is None:
             if requested:
+                media = self.parse_tweet_media(tweet)
+                google_url = f"https://www.google.com/searchbyimage?image_url={media[0]['media_url_https']}&safe=off"
+
                 self.api.update_status(
-                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything for you 😔",
+                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything for you 😔\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nYou might be able to find something on Google however!\n{google_url}",
                         in_reply_to_status_id=tweet.id
                 )
             return
