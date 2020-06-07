@@ -154,15 +154,21 @@ class TwitterSauce:
 
         # Iterate and process the search results
         for tweet in search_results:
+            # Update the ID cutoff before continuing
+            self.query_since = max([self.query_since, tweet.id])
+
             # Make sure we aren't searching ourselves somehow
             if tweet.author.id == self.my.id:
                 self.log.debug(f"[SEARCH] Ignoring a self-tweet")
                 continue
 
-            try:
-                # Update the ID cutoff before attempting to parse the tweet
-                self.query_since = max([self.query_since, tweet.id])
+            # Make sure we don't respond twice if the user used our trigger phrase AND mentioned us
+            if f'@{self.my.screen_name}' in tweet.text:
+                self.log.info("This query includes a bot mention, ignoring")
+                continue
 
+            try:
+                # Process the tweet for media content
                 self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
                 media = self.parse_tweet_media(tweet)
                 self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]['media_url_https']}")
