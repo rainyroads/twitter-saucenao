@@ -290,10 +290,6 @@ class TwitterSauce:
                     self.log.info(f"We've already responded to this comment thread; ignoring")
                     raise TwSauceNoMediaException
 
-                # Get the parent comment / tweet
-                self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
-                tweet = self.api.get_status(tweet.in_reply_to_status_id)
-
                 # When someone mentions us to get the sauce of an item, we need to make sure that when others comment
                 # on that reply, we don't take that as them also requesting the sauce to the same item.
                 # This is due to the weird way Twitter's API works. The only sane way to do this is to look up the
@@ -301,6 +297,10 @@ class TwitterSauce:
                 if f'@{self.my.screen_name}' in tweet.text:
                     self.log.info("This is a reply to a mention, not the original mention; ignoring")
                     raise TwSauceNoMediaException
+
+                # Get the parent comment / tweet
+                self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
+                tweet = self.api.get_status(tweet.in_reply_to_status_id)
 
                 # Any media content in this tweet?
                 if 'media' in tweet.entities:
