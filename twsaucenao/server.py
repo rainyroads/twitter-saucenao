@@ -284,11 +284,21 @@ class TwitterSauce:
         If we were mentioned in a reply, we want to get the sauce to the message we replied to
         """
         try:
+            # First, check and see if this is a reply to a post made by us
+            if tweet.in_reply_to_status_id:
+                parent = self.api.get_status(tweet.in_reply_to_status_id)
+                if parent.author.id == self.my.id:
+                    self.log.info("This is a comment on our own post; ignoring")
+
             while tweet.in_reply_to_status_id:
                 # If this is a post by the SauceNao bot, abort, as it means we've already responded to this thread
                 if tweet.author.id == self.my.id:
                     self.log.info(f"We've already responded to this comment thread; ignoring")
                     raise TwSauceNoMediaException
+
+                # Get the parent comment / tweet
+                self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
+                tweet = self.api.get_status(tweet.in_reply_to_status_id)
 
                 # When someone mentions us to get the sauce of an item, we need to make sure that when others comment
                 # on that reply, we don't take that as them also requesting the sauce to the same item.
@@ -297,10 +307,6 @@ class TwitterSauce:
                 if f'@{self.my.screen_name}' in tweet.text:
                     self.log.info("This is a reply to a mention, not the original mention; ignoring")
                     raise TwSauceNoMediaException
-
-                # Get the parent comment / tweet
-                self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
-                tweet = self.api.get_status(tweet.in_reply_to_status_id)
 
                 # Any media content in this tweet?
                 if 'media' in tweet.entities:
