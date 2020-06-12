@@ -241,7 +241,7 @@ class TwitterSauce:
         if requested:
             reply = f"@{tweet.author.screen_name} I found something for you on {sauce.index}!\n\nTitle: {title}"
         else:
-            reply = f"I found the source of this on {sauce.index}!\n\nTitle: {title}"
+            reply = f"I found the source of this in the {sauce.index} database!\n\nTitle: {title}"
 
         if sauce.author_name:
             author = repr.repr(sauce.author_name).strip("'")
