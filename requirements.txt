@@ -1,2 +1,2 @@
-pysaucenao>=0.2.2
+pysaucenao ~= 1.0.0
 tweepy
