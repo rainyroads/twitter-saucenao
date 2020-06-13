@@ -34,7 +34,7 @@ class TwitterSauce:
         self.search_query = str(config.get('Twitter', 'monitored_keyword'))
 
         # The ID cutoff, we populate this once via an initial query at startup
-        self.since_id = max([t.id for t in [*tweepy.Cursor(self.api.mentions_timeline).items()]]) or 1
+        self.since_id = max([t.id for t in [*tweepy.Cursor(self.api.mentions_timeline, tweet_mode='extended').items()]]) or 1
         self.query_since = 0
         self.monitored_since = {}
 
@@ -47,7 +47,7 @@ class TwitterSauce:
         """
         self.log.info(f"[{self.my.screen_name}] Retrieving mentions since tweet {self.since_id}")
 
-        mentions = [*tweepy.Cursor(self.api.mentions_timeline, since_id=self.since_id).items()]
+        mentions = [*tweepy.Cursor(self.api.mentions_timeline, since_id=self.since_id, tweet_mode='extended').items()]
 
         # Filter tweets without a reply AND attachment
         for tweet in mentions:
@@ -87,14 +87,14 @@ class TwitterSauce:
             # Have we fetched a tweet for this account yet?
             if account not in self.monitored_since:
                 # If not, get the last tweet ID from this account and wait for the next post
-                tweet = next(tweepy.Cursor(self.api.user_timeline, account, page=1).items())
+                tweet = next(tweepy.Cursor(self.api.user_timeline, account, page=1, tweet_mode='extended').items())
                 self.monitored_since[account] = tweet.id
                 self.log.info(f"[{account}] Monitoring tweets after {tweet.id}")
                 continue
 
             # Get all tweets since our last check
             self.log.info(f"[{account}] Retrieving tweets since {self.monitored_since[account]}")
-            tweets = [*tweepy.Cursor(self.api.user_timeline, account, since_id=self.monitored_since[account]).items()]  # type: List[tweepy.models.Status]
+            tweets = [*tweepy.Cursor(self.api.user_timeline, account, since_id=self.monitored_since[account], tweet_mode='extended').items()]  # type: List[tweepy.models.Status]
             self.log.info(f"[{account}] {len(tweets)} tweets found")
             for tweet in tweets:
                 try:
@@ -144,7 +144,7 @@ class TwitterSauce:
             return
 
         search_results = self.api.search(self.search_query, result_type='recent', count=10, include_entities=True,
-                                         since_id=self.query_since)
+                                         since_id=self.query_since, tweet_mode='extended')
 
         # Populate the starting max ID
         if not self.query_since:
