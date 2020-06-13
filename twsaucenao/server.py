@@ -113,7 +113,7 @@ class TwitterSauce:
                     self._posts_processed.append(tweet.id)
 
                     # Make sure this isn't a re-tweet
-                    if 'RT @' in tweet.text or hasattr(tweet, 'retweeted_status'):
+                    if 'RT @' in tweet.full_text or hasattr(tweet, 'retweeted_status'):
                         self.log.info(f"[{account}] Retweeted post; ignoring")
                         continue
 
@@ -163,7 +163,7 @@ class TwitterSauce:
                 continue
 
             # Make sure we don't respond twice if the user used our trigger phrase AND mentioned us
-            if f'@{self.my.screen_name}' in tweet.text:
+            if f'@{self.my.screen_name}' in tweet.full_text:
                 self.log.info("This query includes a bot mention, ignoring")
                 continue
 
@@ -310,7 +310,7 @@ class TwitterSauce:
                 # on that reply, we don't take that as them also requesting the sauce to the same item.
                 # This is due to the weird way Twitter's API works. The only sane way to do this is to look up the
                 # parent tweet ID and see if we're mentioned anywhere in it. If we are, don't reply again.
-                if f'@{self.my.screen_name}' in tweet.text:
+                if f'@{self.my.screen_name}' in tweet.full_text:
                     self.log.info("This is a reply to a mention, not the original mention; ignoring")
                     raise TwSauceNoMediaException
 
