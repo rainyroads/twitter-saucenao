@@ -292,7 +292,7 @@ class TwitterSauce:
         try:
             # First, check and see if this is a reply to a post made by us
             if tweet.in_reply_to_status_id:
-                parent = self.api.get_status(tweet.in_reply_to_status_id)
+                parent = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
                 if parent.author.id == self.my.id:
                     self.log.info("This is a comment on our own post; ignoring")
 
@@ -304,7 +304,7 @@ class TwitterSauce:
 
                 # Get the parent comment / tweet
                 self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
-                tweet = self.api.get_status(tweet.in_reply_to_status_id)
+                tweet = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
 
                 # When someone mentions us to get the sauce of an item, we need to make sure that when others comment
                 # on that reply, we don't take that as them also requesting the sauce to the same item.
