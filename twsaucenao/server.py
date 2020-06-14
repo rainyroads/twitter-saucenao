@@ -252,7 +252,7 @@ class TwitterSauce:
             title = repr.repr(sauce.title).strip("'")
 
         if requested:
-            reply = f"@{tweet.author.screen_name} I found something for you on {sauce.index}!\n\nTitle: {title}"
+            reply = f"@{tweet.author.screen_name} I found something for you in the {sauce.index} database!\n\nTitle: {title}"
         else:
             reply = f"I found the source of this in the {sauce.index} database!\n\nTitle: {title}"
 
