@@ -61,7 +61,20 @@ class TwitterSauce:
                     self.log.debug(f"[{self.my.screen_name}] Ignoring a self-mentioning tweet")
                     continue
 
-                media = self.parse_tweet_media(tweet)
+                # Attempt to parse the tweets media content
+                try:
+                    media = self.parse_tweet_media(tweet)
+                except tweepy.error.TweepError as error:
+                    if error.api_code == 136:
+                        self.log.warning(f"[{self.my.screen_name}] We were blocked by the author of a tweet we attempted to look-up")
+                        self.api.update_status(
+                                f"@{tweet.author.screen_name} Sorry, it looks like the author of this post has blocked us. For more information, please refer to:\nhttps://github.com/FujiMakoto/twitter-saucenao/#blocked-by",
+                                in_reply_to_status_id=tweet.id
+                        )
+                    else:
+                        self.log.error(f"[{self.my.screen_name}] {error.reason}")
+                    continue
+
                 sauce = await self.get_sauce(media[0])
                 self.send_reply(tweet, sauce)
             except TwSauceNoMediaException:
