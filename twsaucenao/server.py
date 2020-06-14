@@ -34,7 +34,10 @@ class TwitterSauce:
         self.search_query = str(config.get('Twitter', 'monitored_keyword'))
 
         # The ID cutoff, we populate this once via an initial query at startup
-        self.since_id = max([t.id for t in [*tweepy.Cursor(self.api.mentions_timeline, tweet_mode='extended').items()]]) or 1
+        try:
+            self.since_id = tweepy.Cursor(self.api.mentions_timeline, tweet_mode='extended', count=1).items(1).next().id
+        except StopIteration:
+            self.since_id = 0
         self.query_since = 0
         self.monitored_since = {}
 
