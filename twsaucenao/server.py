@@ -269,7 +269,7 @@ class TwitterSauce:
         reply += f"\n{sauce.source_url}"
 
         if not requested:
-            reply += f"\n\nI can help you look up the sauce to images elsewhere too! Just mention me in a reply to an image you want to look up."
+            reply += f"\n\nNeed sauce elsewhere? Just follow and mention me in a reply and I'll be right over!"
         self.api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=not requested)
 
     # noinspection PyUnresolvedReferences
