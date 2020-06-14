@@ -27,7 +27,6 @@ Here is a list of Twitter accounts that have blocked the official @saucenaopls b
 
 * @LewdRealm (Blocked 05/27/2020)
 * @WaifuSupply (Blocked 05/28/2020)
-* @lainsupremacy (Blocked 06/13/2020)
 
 ## Officially monitored keyphrase
 I’ve added experimental support for monitoring twitter for anyone who asks “sauce pls” and will try and reply with the sauce of the post if possible!
