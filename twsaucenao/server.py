@@ -91,7 +91,7 @@ class TwitterSauce:
                 sauce = await self.get_sauce(media[0])
 
                 # Similarity requirement check
-                if sauce.similarity < self.minsim_mentioned:
+                if sauce and (sauce.similarity < self.minsim_mentioned):
                     self.log.info(
                         f"[{self.my.screen_name}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
                     sauce = None
@@ -157,7 +157,7 @@ class TwitterSauce:
                     sauce = await self.get_sauce(media[0])
 
                     # Similarity requirement check
-                    if sauce.similarity < self.minsim_monitored:
+                    if sauce and (sauce.similarity < self.minsim_monitored):
                         self.log.info(f"[{account}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
                         sauce = None
 
@@ -219,7 +219,7 @@ class TwitterSauce:
                               else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
 
                 # Similarity requirement check
-                if sauce.similarity < self.minsim_searching:
+                if sauce and (sauce.similarity < self.minsim_searching):
                     self.log.info(
                         f"[SEARCH] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
                     sauce = None
