@@ -19,9 +19,9 @@ class TwitterSauce:
         self.api = twitter_api()
         self.readonly_api = twitter_readonly_api() if config.has_section('TwitterReadOnly') else None
 
-        self.minsim_mentioned = config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0)
-        self.minsim_monitored = config.get('SauceNao', 'min_similarity_monitored', fallback=65.0)
-        self.minsim_searching = config.get('SauceNao', 'min_similarity_searching', fallback=70.0)
+        self.minsim_mentioned = float(config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0))
+        self.minsim_monitored = float(config.get('SauceNao', 'min_similarity_monitored', fallback=65.0))
+        self.minsim_searching = float(config.get('SauceNao', 'min_similarity_searching', fallback=70.0))
         self.sauce = SauceNao(
                 api_key=config.get('SauceNao', 'api_key', fallback=None),
                 min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching)
