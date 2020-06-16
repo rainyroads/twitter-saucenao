@@ -41,5 +41,5 @@ def twitter_readonly_api():
     except Exception as e:
         logger.critical("Error loading API", exc_info=True)
         raise e
-    logger.info("Twitter API ready")
+    logger.info("Read-only Twitter API activated")
     return api
