@@ -18,7 +18,14 @@ class TwitterSauce:
         self.log = logging.getLogger(__name__)
         self.api = twitter_api()
         self.readonly_api = twitter_readonly_api() if config.has_section('TwitterReadOnly') else None
-        self.sauce = SauceNao(api_key=config.get('SauceNao', 'api_key', fallback=None))
+
+        self.minsim_mentioned = config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0)
+        self.minsim_monitored = config.get('SauceNao', 'min_similarity_monitored', fallback=65.0)
+        self.minsim_searching = config.get('SauceNao', 'min_similarity_searching', fallback=70.0)
+        self.sauce = SauceNao(
+                api_key=config.get('SauceNao', 'api_key', fallback=None),
+                min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching)
+        )
 
         # Cache some information about ourselves
         self.my = self.api.me()
@@ -80,7 +87,15 @@ class TwitterSauce:
                         self.log.error(f"[{self.my.screen_name}] {error.reason}")
                     continue
 
+                # Get the sauce!
                 sauce = await self.get_sauce(media[0])
+
+                # Similarity requirement check
+                if sauce.similarity < self.minsim_mentioned:
+                    self.log.info(
+                        f"[{self.my.screen_name}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
+                    sauce = None
+
                 self.send_reply(tweet, sauce)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
@@ -138,7 +153,14 @@ class TwitterSauce:
                     media = self.parse_tweet_media(tweet)
                     self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]['media_url_https']}")
 
+                    # Get the sauce
                     sauce = await self.get_sauce(media[0])
+
+                    # Similarity requirement check
+                    if sauce.similarity < self.minsim_monitored:
+                        self.log.info(f"[{account}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
+                        sauce = None
+
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[{account}] Failed to find sauce for tweet {tweet.id}")
 
@@ -191,9 +213,16 @@ class TwitterSauce:
                 media = self.parse_tweet_media(tweet)
                 self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]['media_url_https']}")
 
+                # Get the sauce
                 sauce = await self.get_sauce(media[0])
                 self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                               else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
+
+                # Similarity requirement check
+                if sauce.similarity < self.minsim_searching:
+                    self.log.info(
+                        f"[SEARCH] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
+                    sauce = None
 
                 self.send_reply(tweet, sauce, False)
             except TwSauceNoMediaException:
