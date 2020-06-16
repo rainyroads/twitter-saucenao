@@ -306,52 +306,47 @@ class TwitterSauce:
         """
         If we were mentioned in a reply, we want to get the sauce to the message we replied to
         """
-        try:
-            # First, check and see if this is a reply to a post made by us
-            if tweet.in_reply_to_status_id:
-                parent = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
-                if parent.author.id == self.my.id:
-                    self.log.info("This is a comment on our own post; ignoring")
-                    raise TwSauceNoMediaException
+        # First, check and see if this is a reply to a post made by us
+        if tweet.in_reply_to_status_id:
+            parent = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
+            if parent.author.id == self.my.id:
+                self.log.info("This is a comment on our own post; ignoring")
+                raise TwSauceNoMediaException
 
-                if parent.author.id == SAUCENAOPLS_TWITTER_ID:
-                    self.log.info("The official SauceNaoPls account has already responded to this post; ignoring")
-                    raise TwSauceNoMediaException
+            if parent.author.id == SAUCENAOPLS_TWITTER_ID:
+                self.log.info("The official SauceNaoPls account has already responded to this post; ignoring")
+                raise TwSauceNoMediaException
 
-            while tweet.in_reply_to_status_id:
-                # If this is a post by the SauceNao bot, abort, as it means we've already responded to this thread
-                if tweet.author.id == self.my.id:
-                    self.log.info(f"We've already responded to this comment thread; ignoring")
-                    raise TwSauceNoMediaException
+        while tweet.in_reply_to_status_id:
+            # If this is a post by the SauceNao bot, abort, as it means we've already responded to this thread
+            if tweet.author.id == self.my.id:
+                self.log.info(f"We've already responded to this comment thread; ignoring")
+                raise TwSauceNoMediaException
 
-                if tweet.author.id == SAUCENAOPLS_TWITTER_ID:
-                    self.log.info("The official SauceNaoPls account has already responded to this post; ignoring")
-                    raise TwSauceNoMediaException
+            if tweet.author.id == SAUCENAOPLS_TWITTER_ID:
+                self.log.info("The official SauceNaoPls account has already responded to this post; ignoring")
+                raise TwSauceNoMediaException
 
-                # Get the parent comment / tweet
-                self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
-                tweet = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
+            # Get the parent comment / tweet
+            self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
+            tweet = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
 
-                # When someone mentions us to get the sauce of an item, we need to make sure that when others comment
-                # on that reply, we don't take that as them also requesting the sauce to the same item.
-                # This is due to the weird way Twitter's API works. The only sane way to do this is to look up the
-                # parent tweet ID and see if we're mentioned anywhere in it. If we are, don't reply again.
-                if f'@{self.my.screen_name}' in tweet.full_text:
-                    self.log.info("This is a reply to a mention, not the original mention; ignoring")
-                    raise TwSauceNoMediaException
+            # When someone mentions us to get the sauce of an item, we need to make sure that when others comment
+            # on that reply, we don't take that as them also requesting the sauce to the same item.
+            # This is due to the weird way Twitter's API works. The only sane way to do this is to look up the
+            # parent tweet ID and see if we're mentioned anywhere in it. If we are, don't reply again.
+            if f'@{self.my.screen_name}' in tweet.full_text:
+                self.log.info("This is a reply to a mention, not the original mention; ignoring")
+                raise TwSauceNoMediaException
 
-                # Any media content in this tweet?
-                if 'media' in tweet.entities:
-                    self.log.info(f"Media content found in tweet {tweet.id}")
-                    break
+            # Any media content in this tweet?
+            if 'media' in tweet.entities:
+                self.log.info(f"Media content found in tweet {tweet.id}")
+                break
 
-                if hasattr(tweet, 'extended_entities') and 'media' in tweet.extended_entities:
-                    self.log.info(f"Media content found in tweet {tweet.id}")
-                    break
-
-        except tweepy.TweepError:
-            self.log.warning(f"Tweet {tweet.in_reply_to_status_id} no longer exists or we don't have permission to view it")
-            raise TwSauceNoMediaException
+            if hasattr(tweet, 'extended_entities') and 'media' in tweet.extended_entities:
+                self.log.info(f"Media content found in tweet {tweet.id}")
+                break
 
         # Now we have a direct tweet to parse!
         return self._parse_direct(tweet)
