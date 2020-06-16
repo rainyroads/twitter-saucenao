@@ -66,11 +66,14 @@ async def main() -> None:
     Returns:
         None
     """
-    await asyncio.gather(
-            mentions(),
-            monitored(),
-            search()
-    )
+    tasks = []
+    if not config.getboolean('Twitter', 'disable_mentions', fallback=False):
+        tasks.append(mentions())
+
+    tasks.append(monitored())
+    tasks.append(search())
+
+    await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':
