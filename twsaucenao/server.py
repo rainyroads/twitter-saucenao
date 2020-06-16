@@ -8,7 +8,7 @@ import tweepy
 from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource
 
 from twsaucenao import SAUCENAOPLS_TWITTER_ID
-from twsaucenao.api import twitter_api
+from twsaucenao.api import twitter_api, twitter_readonly_api
 from twsaucenao.config import config
 from twsaucenao.errors import *
 
@@ -17,6 +17,7 @@ class TwitterSauce:
     def __init__(self):
         self.log = logging.getLogger(__name__)
         self.api = twitter_api()
+        self.readonly_api = twitter_readonly_api() if config.has_section('TwitterReadOnly') else None
         self.sauce = SauceNao(api_key=config.get('SauceNao', 'api_key', fallback=None))
 
         # Cache some information about ourselves
@@ -308,7 +309,7 @@ class TwitterSauce:
         """
         # First, check and see if this is a reply to a post made by us
         if tweet.in_reply_to_status_id:
-            parent = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
+            parent = self._get_status(tweet.in_reply_to_status_id)
             if parent.author.id == self.my.id:
                 self.log.info("This is a comment on our own post; ignoring")
                 raise TwSauceNoMediaException
@@ -329,7 +330,7 @@ class TwitterSauce:
 
             # Get the parent comment / tweet
             self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
-            tweet = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
+            tweet = self._get_status(tweet.in_reply_to_status_id)
 
             # When someone mentions us to get the sauce of an item, we need to make sure that when others comment
             # on that reply, we don't take that as them also requesting the sauce to the same item.
@@ -350,3 +351,22 @@ class TwitterSauce:
 
         # Now we have a direct tweet to parse!
         return self._parse_direct(tweet)
+    
+    def _get_status(self, tweet_id) -> tweepy.Status:
+        """
+        Get the specified tweet
+        Args:
+            tweet_id (int): The twitter tweet ID
+
+        Returns:
+            tweepy.Status
+        """
+        try:
+            tweet = self.api.get_status(tweet_id, tweet_mode='extended')
+        except tweepy.TweepError as error:
+            if error.api_code == 136 and self.readonly_api:
+                tweet = self.readonly_api.get_status(tweet_id, tweet_mode='extended')
+            else:
+                raise error
+            
+        return tweet
