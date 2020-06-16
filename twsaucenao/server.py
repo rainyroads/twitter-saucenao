@@ -7,6 +7,7 @@ from typing import *
 import tweepy
 from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource
 
+from twsaucenao import SAUCENAOPLS_TWITTER_ID
 from twsaucenao.api import twitter_api
 from twsaucenao.config import config
 from twsaucenao.errors import *
@@ -311,11 +312,20 @@ class TwitterSauce:
                 parent = self.api.get_status(tweet.in_reply_to_status_id, tweet_mode='extended')
                 if parent.author.id == self.my.id:
                     self.log.info("This is a comment on our own post; ignoring")
+                    raise TwSauceNoMediaException
+
+                if parent.author.id == SAUCENAOPLS_TWITTER_ID:
+                    self.log.info("The official SauceNaoPls account has already responded to this post; ignoring")
+                    raise TwSauceNoMediaException
 
             while tweet.in_reply_to_status_id:
                 # If this is a post by the SauceNao bot, abort, as it means we've already responded to this thread
                 if tweet.author.id == self.my.id:
                     self.log.info(f"We've already responded to this comment thread; ignoring")
+                    raise TwSauceNoMediaException
+
+                if tweet.author.id == SAUCENAOPLS_TWITTER_ID:
+                    self.log.info("The official SauceNaoPls account has already responded to this post; ignoring")
                     raise TwSauceNoMediaException
 
                 # Get the parent comment / tweet
