@@ -39,8 +39,9 @@ class TwitterSauce:
         # Used in the check_monitored() method to prevent re-posting sauces when posts are re-tweeted
         self._posts_processed = []
 
-        # Search query (optional)
-        self.search_query = str(config.get('Twitter', 'monitored_keyword'))
+        # Search queries (optional)
+        self.search_queries = str(config.get('Twitter', 'monitored_keywords', fallback=''))
+        self.search_queries = [k.strip() for k in self.search_queries.split(',')]
 
         # The ID cutoff, we populate this once via an initial query at startup
         try:
@@ -179,55 +180,56 @@ class TwitterSauce:
         Returns:
             None
         """
-        if not self.search_query:
+        if not self.search_queries:
             self.log.debug("[SEARCH] Search query monitoring disabled")
             return
 
-        search_results = self.api.search(self.search_query, result_type='recent', count=10, include_entities=True,
-                                         since_id=self.query_since, tweet_mode='extended')
+        for query in self.search_queries:
+            search_results = self.api.search(query, result_type='recent', count=10, include_entities=True,
+                                             since_id=self.query_since, tweet_mode='extended')
 
-        # Populate the starting max ID
-        if not self.query_since:
-            self.query_since = search_results[0].id
-            self.log.info(f"[SEARCH] Monitoring tweets after {self.query_since} for search query: {self.search_query}")
-            return
+            # Populate the starting max ID
+            if not self.query_since:
+                self.query_since = search_results[0].id
+                self.log.info(f"[SEARCH] Monitoring tweets after {self.query_since} for search query: {query}")
+                return
 
-        # Iterate and process the search results
-        for tweet in search_results:
-            # Update the ID cutoff before continuing
-            self.query_since = max([self.query_since, tweet.id])
+            # Iterate and process the search results
+            for tweet in search_results:
+                # Update the ID cutoff before continuing
+                self.query_since = max([self.query_since, tweet.id])
 
-            # Make sure we aren't searching ourselves somehow
-            if tweet.author.id == self.my.id:
-                self.log.debug(f"[SEARCH] Ignoring a self-tweet")
-                continue
+                # Make sure we aren't searching ourselves somehow
+                if tweet.author.id == self.my.id:
+                    self.log.debug(f"[SEARCH] Ignoring a self-tweet")
+                    continue
 
-            # Make sure we don't respond twice if the user used our trigger phrase AND mentioned us
-            if f'@{self.my.screen_name}' in tweet.full_text:
-                self.log.info("This query includes a bot mention, ignoring")
-                continue
+                # Make sure we don't respond twice if the user used our trigger phrase AND mentioned us
+                if f'@{self.my.screen_name}' in tweet.full_text:
+                    self.log.info("[SEARCH] This query includes a bot mention, ignoring")
+                    continue
 
-            try:
-                # Process the tweet for media content
-                self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
-                media = self.parse_tweet_media(tweet)
-                self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]['media_url_https']}")
+                try:
+                    # Process the tweet for media content
+                    self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
+                    media = self.parse_tweet_media(tweet)
+                    self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]['media_url_https']}")
 
-                # Get the sauce
-                sauce = await self.get_sauce(media[0])
-                self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
-                              else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
+                    # Get the sauce
+                    sauce = await self.get_sauce(media[0])
+                    self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
+                                  else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
 
-                # Similarity requirement check
-                if sauce and (sauce.similarity < self.minsim_searching):
-                    self.log.info(
-                        f"[SEARCH] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
-                    sauce = None
+                    # Similarity requirement check
+                    if sauce and (sauce.similarity < self.minsim_searching):
+                        self.log.info(
+                            f"[SEARCH] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
+                        sauce = None
 
-                self.send_reply(tweet, sauce, False)
-            except TwSauceNoMediaException:
-                self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
-                continue
+                    self.send_reply(tweet, sauce, False)
+                except TwSauceNoMediaException:
+                    self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
+                    continue
 
     async def get_sauce(self, media: dict) -> Optional[GenericSource]:
         """
