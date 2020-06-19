@@ -6,4 +6,4 @@ __credits__     = ['FujiMakoto']
 __license__     = 'agpl-3.0'
 __maintainer__  = 'FujiMakoto'
 __email__       = 'makoto+github@taiga.sh'
-__status__      = 'Development'
+__status__      = 'Beta'
