@@ -285,10 +285,19 @@ class TwitterSauce:
         if sauce.index != 'H-Misc':
             title = repr.repr(sauce.title).strip("'")
 
-        if requested:
-            reply = f"@{tweet.author.screen_name} I found something for you in the {sauce.index} database!\n\nSimilarity: {sauce.similarity}%\nTitle: {title}"
+        # Format the similarity string
+        similarity = f'Similarity: {sauce.similarity}% ('
+        if sauce.similarity >= 90.0:
+            similarity = similarity + '🟦 High)'
+        elif sauce.similarity >= 70.0:
+            similarity = similarity + '🟨 Medium)'
         else:
-            reply = f"I found the source of this in the {sauce.index} database!\n\nSimilarity: {sauce.similarity}%\nTitle: {title}"
+            similarity = similarity + '🟥 Low)'
+
+        if requested:
+            reply = f"@{tweet.author.screen_name} I found something for you in the {sauce.index} database!\n\n{similarity}\nTitle: {title}"
+        else:
+            reply = f"I found the source of this in the {sauce.index} database!\n\n{similarity}\nTitle: {title}"
 
         if sauce.author_name:
             author = repr.repr(sauce.author_name).strip("'")
