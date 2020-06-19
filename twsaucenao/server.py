@@ -48,7 +48,7 @@ class TwitterSauce:
             self.since_id = tweepy.Cursor(self.api.mentions_timeline, tweet_mode='extended', count=1).items(1).next().id
         except StopIteration:
             self.since_id = 0
-        self.query_since = 0
+        self.query_since = {}
         self.monitored_since = {}
 
     # noinspection PyBroadException
@@ -186,18 +186,18 @@ class TwitterSauce:
 
         for query in self.search_queries:
             search_results = self.api.search(query, result_type='recent', count=10, include_entities=True,
-                                             since_id=self.query_since, tweet_mode='extended')
+                                             since_id=self.query_since.get(query, 0), tweet_mode='extended')
 
             # Populate the starting max ID
-            if not self.query_since:
-                self.query_since = search_results[0].id
+            if not self.query_since.get(query):
+                self.query_since[query] = search_results[0].id
                 self.log.info(f"[SEARCH] Monitoring tweets after {self.query_since} for search query: {query}")
-                return
+                continue
 
             # Iterate and process the search results
             for tweet in search_results:
                 # Update the ID cutoff before continuing
-                self.query_since = max([self.query_since, tweet.id])
+                self.query_since[query] = max([self.query_since[query], tweet.id])
 
                 # Make sure we aren't searching ourselves somehow
                 if tweet.author.id == self.my.id:
