@@ -1,4 +1,6 @@
 # twitter-saucenao
+![GitHub](https://img.shields.io/github/license/FujiMakoto/twitter-saucenao) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/fujimakoto/twitter-saucenao)
+
 An open-source Twitter bot that utilizes the SauceNao API to find the source of images or anime screencaps.
 https://saucenao.com/
 
