@@ -338,7 +338,7 @@ class TwitterSauce:
             try:
                 media = tweet.entities['media']  # type: List[dict]
             except KeyError:
-                self.log.warning(f"Tweet {tweet.id} does not have any downloadable media")
+                self.log.info(f"Tweet {tweet.id} does not have any downloadable media")
                 raise TwSauceNoMediaException
 
         return media
