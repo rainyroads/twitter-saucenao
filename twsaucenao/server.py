@@ -288,13 +288,13 @@ class TwitterSauce:
             title = repr.repr(sauce.title).strip("'")
 
         # Format the similarity string
-        similarity = f'Similarity: {sauce.similarity}% ('
+        similarity = f'Similarity: {sauce.similarity}% ( '
         if sauce.similarity >= 90.0:
-            similarity = similarity + '🟦 High)'
+            similarity = similarity + '🟦 High )'
         elif sauce.similarity >= 70.0:
-            similarity = similarity + '🟨 Medium)'
+            similarity = similarity + '🟨 Medium )'
         else:
-            similarity = similarity + '🟥 Low)'
+            similarity = similarity + '🟥 Low )'
 
         if requested:
             reply = f"@{tweet.author.screen_name} I found something for you in the {sauce.index} database!\n\n{similarity}\nTitle: {title}"
