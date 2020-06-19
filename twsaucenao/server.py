@@ -191,7 +191,7 @@ class TwitterSauce:
             # Populate the starting max ID
             if not self.query_since.get(query):
                 self.query_since[query] = search_results[0].id
-                self.log.info(f"[SEARCH] Monitoring tweets after {self.query_since} for search query: {query}")
+                self.log.info(f"[SEARCH] Monitoring tweets after {self.query_since[query]} for search query: {query}")
                 continue
 
             # Iterate and process the search results
