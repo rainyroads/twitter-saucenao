@@ -29,11 +29,7 @@ Here is a list of Twitter accounts that have blocked the official @saucenaopls b
 
 * @LewdRealm (Blocked 05/27/2020)
 * @WaifuSupply (Blocked 05/28/2020)
-
-## Officially monitored keyphrase
-I’ve added experimental support for monitoring twitter for anyone who asks “sauce pls” and will try and reply with the sauce of the post if possible!
-
-(If you want to try using this feature in your own instance of the bot, please don’t use the same keyword so we’re not spamming the same posts!)
+* @PinketteLoser (Blocked 06/20/2020)
 
 # Documentation
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the example configuration file, [**config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**, then set the configuration variables accordingly.
