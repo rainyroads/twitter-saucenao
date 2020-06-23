@@ -5,20 +5,24 @@ import reprlib
 from typing import *
 
 import tweepy
-from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource
+from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource, PixivSource
 
 from twsaucenao import SAUCENAOPLS_TWITTER_ID
 from twsaucenao.api import twitter_api, twitter_readonly_api
 from twsaucenao.config import config
 from twsaucenao.errors import *
+from twsaucenao.pixiv import Pixiv
 
 
 class TwitterSauce:
     def __init__(self):
         self.log = logging.getLogger(__name__)
+
+        # Twitter
         self.api = twitter_api()
         self.readonly_api = twitter_readonly_api() if config.has_section('TwitterReadOnly') else None
 
+        # SauceNao
         self.minsim_mentioned = float(config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0))
         self.minsim_monitored = float(config.get('SauceNao', 'min_similarity_monitored', fallback=65.0))
         self.minsim_searching = float(config.get('SauceNao', 'min_similarity_searching', fallback=70.0))
@@ -26,6 +30,9 @@ class TwitterSauce:
                 api_key=config.get('SauceNao', 'api_key', fallback=None),
                 min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching)
         )
+
+        # Pixiv
+        self.pixiv = Pixiv()
 
         # Cache some information about ourselves
         self.my = self.api.me()
@@ -304,6 +311,11 @@ class TwitterSauce:
         if sauce.author_name:
             author = repr.repr(sauce.author_name).strip("'")
             reply += f"\nAuthor: {author}"
+
+        if isinstance(sauce, PixivSource):
+            twitter_sauce = self.pixiv.get_author_twitter(sauce.data['member_id'])
+            if twitter_sauce:
+                reply += f"\nArtists Twitter: {twitter_sauce}"
 
         if isinstance(sauce, VideoSource):
             if sauce.episode:
