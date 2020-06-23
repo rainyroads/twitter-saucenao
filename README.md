@@ -29,6 +29,7 @@ Here is a list of Twitter accounts that have blocked the official @saucenaopls b
 
 * @LewdRealm (Blocked 05/27/2020)
 * @WaifuSupply (Blocked 05/28/2020)
+* @WaifuMenu (Blocked 06/23/2020)
 * @PinketteLoser (Blocked 06/20/2020)
 
 # Documentation
