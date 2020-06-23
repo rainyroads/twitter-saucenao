@@ -13,12 +13,10 @@ These accounts are currently monitored by saucenaopls on Twitter. If you’d lik
 
 * [@MeguminBot_](https://twitter.com/MeguminBot_) (Officially endorsed)
 * [@WaifuAesthetic](https://twitter.com/WaifuAesthetic) (Officially endorsed)
-* @WaifuMenu (Unofficial)
 * @Kawaii_TL (Unofficial)
 * @TweetingWaifus (Unofficial)
 * @Mangadoujins (Unofficial)
-* @empire_hentai (Unofficial)
-* @animesview (Unofficial)
+* @WaifuAesthetic (Unofficial)
 
 ## Blocked by
 Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit whatsoever.
@@ -29,6 +27,7 @@ Here is a list of Twitter accounts that have blocked the official @saucenaopls b
 
 * @LewdRealm (Blocked 05/27/2020)
 * @WaifuSupply (Blocked 05/28/2020)
+* @WaifuMenu (Blocked 06/23/2020)
 * @PinketteLoser (Blocked 06/20/2020)
 
 # Documentation
