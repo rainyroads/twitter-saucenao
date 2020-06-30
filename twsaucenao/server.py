@@ -299,6 +299,9 @@ class TwitterSauce:
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
         if sauce.index != 'H-Misc':
             title = repr.repr(sauce.title).strip("'")
+        else:
+            repr.maxstring = 128
+            title = repr.repr(sauce.title).strip("'")
 
         # Format the similarity string
         similarity = f'Similarity: {sauce.similarity}% ( '
