@@ -423,9 +423,10 @@ class TwitterSauce:
             tweet = self.api.get_status(tweet_id, tweet_mode='extended')
         except tweepy.TweepError as error:
             if error.api_code == 136 and self.readonly_api:
-                self.log.warning("User has blocked the main account; falling back to read-only API for media parsing")
+                self.log.warning(f"User has blocked the main account; falling back to read-only API for media parsing tweet {tweet_id}")
                 tweet = self.readonly_api.get_status(tweet_id, tweet_mode='extended')
             else:
+                self.log.warning(f"User that submitted tweet {tweet_id} has blocked the bots account, unable to perform lookup")
                 raise error
             
         return tweet
