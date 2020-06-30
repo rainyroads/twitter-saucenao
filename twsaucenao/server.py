@@ -49,6 +49,7 @@ class TwitterSauce:
         # Search queries (optional)
         self.search_queries = str(config.get('Twitter', 'monitored_keywords', fallback=''))
         self.search_queries = [k.strip() for k in self.search_queries.split(',')]
+        self.search_charlimit = config.getint('Twitter', 'search_char_limit', fallback=120)
 
         # The ID cutoff, we populate this once via an initial query at startup
         try:
@@ -208,12 +209,17 @@ class TwitterSauce:
 
                 # Make sure we aren't searching ourselves somehow
                 if tweet.author.id == self.my.id:
-                    self.log.debug(f"[SEARCH] Ignoring a self-tweet")
+                    self.log.debug(f"[SEARCH] Skip: Ignoring a self-tweet")
                     continue
 
                 # Make sure we don't respond twice if the user used our trigger phrase AND mentioned us
                 if f'@{self.my.screen_name}' in tweet.full_text:
-                    self.log.info("[SEARCH] This query includes a bot mention, ignoring")
+                    self.log.info("[SEARCH] Skip: This query includes a bot mention")
+                    continue
+
+                # Make sure this post doesn't exceed the character limit
+                if len(tweet.full_text) >= self.search_charlimit:
+                    self.log.info(f"[SEARCH] Skip: Query matched but exceeded the {self.search_charlimit} character limit")
                     continue
 
                 try:
