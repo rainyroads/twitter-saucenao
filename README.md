@@ -14,22 +14,21 @@ These accounts are currently monitored by saucenaopls on Twitter. If you’d lik
 * [@MeguminBot_](https://twitter.com/MeguminBot_) (Officially endorsed)
 * [@WaifuAesthetic](https://twitter.com/WaifuAesthetic) (Officially endorsed)
 * [@DDOAnime](https://twitter.com/DDOAnime) (Officially endorsed)
-* @Kawaii_TL (Unofficial)
-* @TweetingWaifus (Unofficial)
-* @Mangadoujins (Unofficial)
-* @WaifuAesthetic (Unofficial)
 
 ## Blocked by
 Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit whatsoever.
 
-Why? I honestly don’t know! I’m afraid I don’t understand the mindset of these people either.
+This post offers some insight into the mindsets of people like this,
 
-Here is a list of Twitter accounts that have blocked the official @saucenaopls bot. Unfortunately, this means the official bot cannot respond to any inquiries on posts made by these accounts. You can still have your own bot track these accounts, but they’re likely to block you as well!
+https://twitter.com/_kairy_draws_/status/1276653871448961028
+
+Here is a list of Twitter accounts that have blocked the official @saucenaopls bot.
 
 * @LewdRealm (Blocked 05/27/2020)
 * @WaifuSupply (Blocked 05/28/2020)
 * @WaifuMenu (Blocked 06/23/2020)
-* @PinketteLoser (Blocked 06/20/2020)
+* @WaifuCult (Blocked 06/29/2020)
+* @Yumi69x2 (Blocked 06/29/2020) (NSFW)
 
 # Documentation
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the example configuration file, [**config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**, then set the configuration variables accordingly.
