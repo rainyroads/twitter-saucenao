@@ -28,6 +28,7 @@ Here is a list of Twitter accounts that have blocked the official @saucenaopls b
 * @WaifuSupply (Blocked 05/28/2020)
 * @WaifuMenu (Blocked 06/23/2020)
 * @WaifuCult (Blocked 06/29/2020)
+* @Yumi69x2 (Blocked 06/29/2020) (NSFW)
 
 # Documentation
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the example configuration file, [**config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**, then set the configuration variables accordingly.
