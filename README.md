@@ -13,6 +13,7 @@ These accounts are currently monitored by saucenaopls on Twitter. If you’d lik
 
 * [@MeguminBot_](https://twitter.com/MeguminBot_) (Officially endorsed)
 * [@WaifuAesthetic](https://twitter.com/WaifuAesthetic) (Officially endorsed)
+* [@DDOAnime](https://twitter.com/DDOAnime) (Officially endorsed)
 * @Kawaii_TL (Unofficial)
 * @TweetingWaifus (Unofficial)
 * @Mangadoujins (Unofficial)
