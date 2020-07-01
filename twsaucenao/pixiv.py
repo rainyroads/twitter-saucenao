@@ -87,7 +87,7 @@ class Pixiv:
 
         user = self.get_author(author_id)
 
-        twitter_url = user['profile']['twitter_url']
+        twitter_url = user['profile']['twitter_url'] if (user and 'profile' in user) else None
         if twitter_url:
             match = self._re_twitter.match(twitter_url)
             if match and match.group('username'):
