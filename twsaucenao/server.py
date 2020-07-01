@@ -347,8 +347,12 @@ class TwitterSauce:
             if sauce.chapter:
                 reply += f"\nChapter: {sauce.chapter}"
 
+        # Display our confidence rating
         reply += f"\n{similarity}"
-        reply += f"\n{sauce.source_url}"
+
+        # Source URL's are not available in some indexes
+        if sauce.source_url:
+            reply += f"\n{sauce.source_url}"
 
         if not requested:
             reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
