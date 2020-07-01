@@ -352,11 +352,11 @@ class TwitterSauce:
 
         if not requested:
             reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
-        reply = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=not requested)
+        reply = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
 
         # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
         if blocked and twitter_sauce:
             self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
             api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたのアートワークを盗み、私にあなたのクレジットを表示することをブロックしました。
 https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
-https://help.twitter.com/forms/dmca""", in_reply_to_status_id=reply.id, auto_populate_reply_metadata=not requested)
+https://help.twitter.com/forms/dmca""", in_reply_to_status_id=reply.id, auto_populate_reply_metadata=True)
