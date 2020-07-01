@@ -317,7 +317,7 @@ class TwitterSauce:
         if requested:
             reply = f"@{tweet.author.screen_name} I found this in the {sauce.index} database!\n"
         else:
-            reply = f"I found something in the {sauce.index} database! Does this help?\n"
+            reply = f"I found something in the {sauce.index} database that may be related!\n"
 
         # If it's a Pixiv source, try and get their Twitter handle (this is considered most important and displayed first)
         twitter_sauce = None
