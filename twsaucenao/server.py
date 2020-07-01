@@ -5,22 +5,19 @@ import reprlib
 from typing import *
 
 import tweepy
-from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource, PixivSource
+from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource, PixivSource, \
+    MangaSource
 
-from twsaucenao import SAUCENAOPLS_TWITTER_ID
-from twsaucenao.api import twitter_api, twitter_readonly_api
+from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.errors import *
 from twsaucenao.pixiv import Pixiv
+from twsaucenao.twitter import TweetParser
 
 
 class TwitterSauce:
     def __init__(self):
         self.log = logging.getLogger(__name__)
-
-        # Twitter
-        self.api = twitter_api()
-        self.readonly_api = twitter_readonly_api() if config.has_section('TwitterReadOnly') else None
 
         # SauceNao
         self.minsim_mentioned = float(config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0))
@@ -35,7 +32,7 @@ class TwitterSauce:
         self.pixiv = Pixiv()
 
         # Cache some information about ourselves
-        self.my = self.api.me()
+        self.my = api.me()
         self.log.info(f"Connected as: {self.my.screen_name}")
 
         # Image URL's are md5 hashed and cached here to prevent duplicate API queries. This is cleared every 24-hours.
@@ -53,7 +50,7 @@ class TwitterSauce:
 
         # The ID cutoff, we populate this once via an initial query at startup
         try:
-            self.since_id = tweepy.Cursor(self.api.mentions_timeline, tweet_mode='extended', count=1).items(1).next().id
+            self.since_id = tweepy.Cursor(api.mentions_timeline, tweet_mode='extended', count=1).items(1).next().id
         except StopIteration:
             self.since_id = 0
         self.query_since = {}
@@ -68,7 +65,7 @@ class TwitterSauce:
         """
         self.log.info(f"[{self.my.screen_name}] Retrieving mentions since tweet {self.since_id}")
 
-        mentions = [*tweepy.Cursor(self.api.mentions_timeline, since_id=self.since_id, tweet_mode='extended').items()]
+        mentions = [*tweepy.Cursor(api.mentions_timeline, since_id=self.since_id, tweet_mode='extended').items()]
 
         # Filter tweets without a reply AND attachment
         for tweet in mentions:
@@ -84,11 +81,12 @@ class TwitterSauce:
 
                 # Attempt to parse the tweets media content
                 try:
-                    media = self.parse_tweet_media(tweet)
+                    tweet_parser = TweetParser(tweet)
+                    tweet_parser.find_closest_media()
                 except tweepy.error.TweepError as error:
                     if error.api_code == 136:
                         self.log.warning(f"[{self.my.screen_name}] We were blocked by the author of a tweet we attempted to look-up")
-                        self.api.update_status(
+                        api.update_status(
                                 f"@{tweet.author.screen_name} Sorry, it looks like the author of this post has blocked us. For more information, please refer to:\nhttps://github.com/FujiMakoto/twitter-saucenao/#blocked-by",
                                 in_reply_to_status_id=tweet.id
                         )
@@ -97,7 +95,7 @@ class TwitterSauce:
                     continue
 
                 # Get the sauce!
-                sauce = await self.get_sauce(media[0])
+                sauce = await self.get_sauce(tweet_parser.media[0])
 
                 # Similarity requirement check
                 if sauce and (sauce.similarity < self.minsim_mentioned):
@@ -129,14 +127,14 @@ class TwitterSauce:
             # Have we fetched a tweet for this account yet?
             if account not in self.monitored_since:
                 # If not, get the last tweet ID from this account and wait for the next post
-                tweet = next(tweepy.Cursor(self.api.user_timeline, account, page=1, tweet_mode='extended').items())
+                tweet = next(tweepy.Cursor(api.user_timeline, account, page=1, tweet_mode='extended').items())
                 self.monitored_since[account] = tweet.id
                 self.log.info(f"[{account}] Monitoring tweets after {tweet.id}")
                 continue
 
             # Get all tweets since our last check
             self.log.info(f"[{account}] Retrieving tweets since {self.monitored_since[account]}")
-            tweets = [*tweepy.Cursor(self.api.user_timeline, account, since_id=self.monitored_since[account], tweet_mode='extended').items()]  # type: List[tweepy.models.Status]
+            tweets = [*tweepy.Cursor(api.user_timeline, account, since_id=self.monitored_since[account], tweet_mode='extended').items()]
             self.log.info(f"[{account}] {len(tweets)} tweets found")
             for tweet in tweets:
                 try:
@@ -159,11 +157,12 @@ class TwitterSauce:
                         self.log.info(f"[{account}] Retweeted post; ignoring")
                         continue
 
-                    media = self.parse_tweet_media(tweet)
-                    self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]['media_url_https']}")
+                    tweet_parser = TweetParser(tweet)
+                    tweet_parser.find_closest_media()
+                    self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {tweet_parser.media[0]}")
 
                     # Get the sauce
-                    sauce = await self.get_sauce(media[0])
+                    sauce = await self.get_sauce(tweet_parser.media[0])
 
                     # Similarity requirement check
                     if sauce and (sauce.similarity < self.minsim_monitored):
@@ -193,8 +192,8 @@ class TwitterSauce:
             return
 
         for query in self.search_queries:
-            search_results = self.api.search(query, result_type='recent', count=10, include_entities=True,
-                                             since_id=self.query_since.get(query, 0), tweet_mode='extended')
+            search_results = api.search(query, result_type='recent', count=10, include_entities=True,
+                                        since_id=self.query_since.get(query, 0), tweet_mode='extended')
 
             # Populate the starting max ID
             if not self.query_since.get(query):
@@ -225,11 +224,12 @@ class TwitterSauce:
                 try:
                     # Process the tweet for media content
                     self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
-                    media = self.parse_tweet_media(tweet)
-                    self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]['media_url_https']}")
+                    tweet_parser = TweetParser(tweet)
+                    tweet_parser.find_closest_media()
+                    self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {tweet_parser.media[0]}")
 
                     # Get the sauce
-                    sauce = await self.get_sauce(media[0])
+                    sauce = await self.get_sauce(tweet_parser.media[0])
                     self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
 
@@ -270,24 +270,26 @@ class TwitterSauce:
         self._cached_results[url_hash] = sauce[0]
         return sauce[0]
 
-    def send_reply(self, tweet: tweepy.models.Status, sauce: Optional[GenericSource], requested=True) -> None:
+    def send_reply(self, tweet, sauce: Optional[GenericSource], requested=True, blocked=False) -> None:
         """
         Return the source of the image
         Args:
-            tweet (tweepy.models.Status): The tweet to reply to
+            tweet (): The tweet to reply to
             sauce (Optional[GenericSource]): The sauce found (or None if nothing was found)
             requested (bool): True if the lookup was requested, or False if this is a monitored user account
+            blocked (bool): If True, the account posting this has blocked the SauceBot
 
         Returns:
             None
         """
         if sauce is None:
             if requested:
-                media = self.parse_tweet_media(tweet)
-                google_url = f"https://www.google.com/searchbyimage?image_url={media[0]['media_url_https']}&safe=off"
+                tweet_parser = TweetParser(tweet)
+                tweet_parser.find_closest_media()
+                google_url = f"https://www.google.com/searchbyimage?image_url={tweet_parser.media[0]}&safe=off"
 
-                self.api.update_status(
-                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything for you 😔\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nYou might be able to find something on Google however!\n{google_url}",
+                api.update_status(
+                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything for you (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nYou might be able to find something on Google however!\n{google_url}",
                         in_reply_to_status_id=tweet.id
                 )
             return
@@ -313,123 +315,48 @@ class TwitterSauce:
             similarity = similarity + '🟥 Low )'
 
         if requested:
-            reply = f"@{tweet.author.screen_name} I found something for you in the {sauce.index} database!\n\n{similarity}\nTitle: {title}"
+            reply = f"@{tweet.author.screen_name} I found this in the {sauce.index} database!\n"
         else:
-            reply = f"I found the source of this in the {sauce.index} database!\n\n{similarity}\nTitle: {title}"
+            reply = f"I found something in the {sauce.index} database! Does this help?\n"
 
-        if sauce.author_name:
-            author = repr.repr(sauce.author_name).strip("'")
-            reply += f"\nAuthor: {author}"
-
+        # If it's a Pixiv source, try and get their Twitter handle (this is considered most important and displayed first)
+        twitter_sauce = None
         if isinstance(sauce, PixivSource):
             twitter_sauce = self.pixiv.get_author_twitter(sauce.data['member_id'])
             if twitter_sauce:
                 reply += f"\nArtists Twitter: {twitter_sauce}"
 
+        # Print the author name if available
+        if sauce.author_name:
+            author = repr.repr(sauce.author_name).strip("'")
+            reply += f"\nAuthor: {author}"
+
+        # Omit the title for Pixiv results since it's usually always non-romanized Japanese and not very helpful
+        if not isinstance(sauce, PixivSource):
+            reply = f"\nTitle: {title}"
+
+        # Add the episode number and timestamp for video sources
         if isinstance(sauce, VideoSource):
             if sauce.episode:
                 reply += f"\nEpisode: {sauce.episode}"
             if sauce.timestamp:
                 reply += f"\nTimestamp: {sauce.timestamp}"
 
+        # Add the chapter for manga sources
+        if isinstance(sauce, MangaSource):
+            if sauce.chapter:
+                reply += f"\nChapter: {sauce.chapter}"
+
+        reply += f"\n{similarity}"
         reply += f"\n{sauce.source_url}"
 
         if not requested:
-            reply += f"\n\nNeed sauce elsewhere? Just follow and mention me in a reply and I'll be right over!"
-        self.api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=not requested)
+            reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
+        reply = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=not requested)
 
-    # noinspection PyUnresolvedReferences
-    def parse_tweet_media(self, tweet: tweepy.models.Status) -> List[dict]:
-        """
-        Determine whether this is a direct tweet or a reply, then parse the media accordingly
-        """
-        if tweet.in_reply_to_status_id:
-            return self._parse_reply(tweet)
-
-        return self._parse_direct(tweet)
-
-    def _parse_direct(self, tweet: tweepy.models.Status) -> List[dict]:
-        """
-        Direct tweet (someone tweeting at us directly, not as a reply to another tweet)
-        Should have media attached, otherwise it's invalid and we ignore it
-        """
-        try:
-            media = tweet.extended_entities['media']  # type: List[dict]
-        except AttributeError:
-            try:
-                media = tweet.entities['media']  # type: List[dict]
-            except KeyError:
-                self.log.info(f"Tweet {tweet.id} does not have any downloadable media")
-                raise TwSauceNoMediaException
-
-        return media
-
-    def _parse_reply(self, tweet: tweepy.models.Status) -> List[dict]:
-        """
-        If we were mentioned in a reply, we want to get the sauce to the message we replied to
-        """
-        # First, check and see if this is a reply to a post made by us
-        if tweet.in_reply_to_status_id:
-            parent = self._get_status(tweet.in_reply_to_status_id)
-            if parent.author.id == self.my.id:
-                self.log.info("This is a comment on our own post; ignoring")
-                raise TwSauceNoMediaException
-
-            if parent.author.id == SAUCENAOPLS_TWITTER_ID:
-                self.log.info("The official SauceNaoPls account has already responded to this post; ignoring")
-                raise TwSauceNoMediaException
-
-        while tweet.in_reply_to_status_id:
-            # If this is a post by the SauceNao bot, abort, as it means we've already responded to this thread
-            if tweet.author.id == self.my.id:
-                self.log.info(f"We've already responded to this comment thread; ignoring")
-                raise TwSauceNoMediaException
-
-            if tweet.author.id == SAUCENAOPLS_TWITTER_ID:
-                self.log.info("The official SauceNaoPls account has already responded to this post; ignoring")
-                raise TwSauceNoMediaException
-
-            # Get the parent comment / tweet
-            self.log.info(f"Looking up parent tweet ID ( {tweet.id} => {tweet.in_reply_to_status_id} )")
-            tweet = self._get_status(tweet.in_reply_to_status_id)
-
-            # When someone mentions us to get the sauce of an item, we need to make sure that when others comment
-            # on that reply, we don't take that as them also requesting the sauce to the same item.
-            # This is due to the weird way Twitter's API works. The only sane way to do this is to look up the
-            # parent tweet ID and see if we're mentioned anywhere in it. If we are, don't reply again.
-            if f'@{self.my.screen_name}' in tweet.full_text:
-                self.log.info("This is a reply to a mention, not the original mention; ignoring")
-                raise TwSauceNoMediaException
-
-            # Any media content in this tweet?
-            if 'media' in tweet.entities:
-                self.log.info(f"Media content found in tweet {tweet.id}")
-                break
-
-            if hasattr(tweet, 'extended_entities') and 'media' in tweet.extended_entities:
-                self.log.info(f"Media content found in tweet {tweet.id}")
-                break
-
-        # Now we have a direct tweet to parse!
-        return self._parse_direct(tweet)
-    
-    def _get_status(self, tweet_id) -> tweepy.Status:
-        """
-        Get the specified tweet
-        Args:
-            tweet_id (int): The twitter tweet ID
-
-        Returns:
-            tweepy.Status
-        """
-        try:
-            tweet = self.api.get_status(tweet_id, tweet_mode='extended')
-        except tweepy.TweepError as error:
-            if error.api_code == 136 and self.readonly_api:
-                self.log.warning(f"User has blocked the main account; falling back to read-only API for media parsing tweet {tweet_id}")
-                tweet = self.readonly_api.get_status(tweet_id, tweet_mode='extended')
-            else:
-                self.log.warning(f"User that submitted tweet {tweet_id} has blocked the bots account, unable to perform lookup")
-                raise error
-            
-        return tweet
+        # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
+        if blocked and twitter_sauce:
+            self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
+            api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたのアートワークを盗み、私にあなたのクレジットを表示することをブロックしました。
+https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
+https://help.twitter.com/forms/dmca""", in_reply_to_status_id=reply.id, auto_populate_reply_metadata=not requested)
