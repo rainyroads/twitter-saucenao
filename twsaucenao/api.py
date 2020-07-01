@@ -7,7 +7,7 @@ from twsaucenao.config import config
 logger = logging.getLogger(__name__)
 
 
-def _twitter_api(key: str, secret: str, token: str, token_secret: str) -> tweepy.api.API:
+def _twitter_api(key: str, secret: str, token: str, token_secret: str):
     """
     Establish a tweepy API instance
     Args:
