@@ -45,7 +45,7 @@ class TwitterSauce:
 
         # Search queries (optional)
         self.search_queries = str(config.get('Twitter', 'monitored_keywords', fallback=''))
-        self.search_queries = [k.strip() for k in self.search_queries.split(',')]
+        self.search_queries = [k.strip() for k in self.search_queries.split(',') if k.strip()]
         self.search_charlimit = config.getint('Twitter', 'search_char_limit', fallback=120)
 
         # The ID cutoff, we populate this once via an initial query at startup
