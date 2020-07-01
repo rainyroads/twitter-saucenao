@@ -244,18 +244,18 @@ class TwitterSauce:
                     self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
                     continue
 
-    async def get_sauce(self, media: dict) -> Optional[GenericSource]:
+    async def get_sauce(self, media: str) -> Optional[GenericSource]:
         """
         Get the sauce of a media tweet
         """
         # Have we cached this tweet already?
-        url_hash = hashlib.md5(media['media_url_https'].encode()).hexdigest()
+        url_hash = hashlib.md5(media.encode()).hexdigest()
         if url_hash in self._cached_results:
             return self._cached_results[url_hash]
 
         # Look up the sauce
         try:
-            sauce = await self.sauce.from_url(media['media_url_https'])
+            sauce = await self.sauce.from_url(media)
             if not sauce.results:
                 self._cached_results[url_hash] = None
                 return None
