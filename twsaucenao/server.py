@@ -103,7 +103,7 @@ class TwitterSauce:
                         f"[{self.my.screen_name}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
                     sauce = None
 
-                self.send_reply(tweet, sauce)
+                self.send_reply(tweet, sauce, blocked=tweet_parser.blocked)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
