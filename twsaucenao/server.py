@@ -333,7 +333,7 @@ class TwitterSauce:
 
         # Omit the title for Pixiv results since it's usually always non-romanized Japanese and not very helpful
         if not isinstance(sauce, PixivSource):
-            reply = f"\nTitle: {title}"
+            reply += f"\nTitle: {title}"
 
         # Add the episode number and timestamp for video sources
         if isinstance(sauce, VideoSource):
