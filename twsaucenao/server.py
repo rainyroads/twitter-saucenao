@@ -6,7 +6,7 @@ from typing import *
 
 import tweepy
 from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource, PixivSource, \
-    MangaSource
+    MangaSource, BooruSource
 
 from twsaucenao.api import api
 from twsaucenao.config import config
@@ -353,6 +353,10 @@ class TwitterSauce:
         # Source URL's are not available in some indexes
         if sauce.source_url:
             reply += f"\n{sauce.source_url}"
+
+        # Some Booru posts have bad source links cited, so we should always provide a Booru link with the source URL
+        if isinstance(sauce, BooruSource) and sauce.source_url != sauce.url:
+            reply += f"\n{sauce.url}"
 
         if not requested:
             reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
