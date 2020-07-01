@@ -289,7 +289,7 @@ class TwitterSauce:
                 google_url = f"https://www.google.com/searchbyimage?image_url={tweet_parser.media[0]}&safe=off"
 
                 api.update_status(
-                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything for you (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nYou might be able to find something on Google however!\n{google_url}",
+                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nYou might be able to find something on Google however!\n{google_url}",
                         in_reply_to_status_id=tweet.id
                 )
             return
