@@ -15,21 +15,26 @@ These accounts are currently monitored by saucenaopls on Twitter. If you’d lik
 * [@WaifuAesthetic](https://twitter.com/WaifuAesthetic) (Officially endorsed)
 * [@DDOAnime](https://twitter.com/DDOAnime) (Officially endorsed)
 
-## Blocked by
-Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit whatsoever.
+## Art thieves I've been blocked by
+Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit because they don't want to share the attention they receive.
 
 This post offers some insight into the mindsets of people like this,
 
 https://twitter.com/_kairy_draws_/status/1276653871448961028
 
-Here is a list of Twitter accounts that have blocked the official @saucenaopls bot.
+Here is a list of Twitter accounts that have blocked the official @saucenaopls bot for crediting artwork they've reposted.
 
 * @LewdRealm (Blocked 05/27/2020)
 * @WaifuSupply (Blocked 05/28/2020)
 * @WaifuMenu (Blocked 06/23/2020)
 * @WaifuCult (Blocked 06/29/2020)
+* @WaifuVibe (Blocked 07/02/2020)
+* @LewdCult (Blocked 07/02/2020) (NSFW)
 * @Yumi69x2 (Blocked 06/29/2020) (NSFW)
 * @love_image__H (Blocked 06/30/2020) (NSFW)
+* @iJaIter (Blocked 06/30/2020)
+
+You can still mention me in the comments of these posts and I can reply to you regardless, this list is compiled more for transparency reasons and to call out are thieves who do not provide acceptable credit for the artwork their accounts repost.
 
 # Documentation
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the example configuration file, [**config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**, then set the configuration variables accordingly.
