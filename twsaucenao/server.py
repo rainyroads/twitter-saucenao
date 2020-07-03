@@ -358,13 +358,24 @@ class TwitterSauce:
         if isinstance(sauce, BooruSource) and sauce.source_url != sauce.url:
             reply += f"\n{sauce.url}"
 
+        # Try and append bot instructions with monitored posts. This might make our post too long, though.
         if not requested:
+            _reply = reply
             reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
-        reply = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
+
+        try:
+            comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
+        except tweepy.TweepError as error:
+            if error.api_code == 186 and not requested:
+                self.log.info("Post is too long; scrubbing bot instructions from message")
+                # noinspection PyUnboundLocalVariable
+                comment = api.update_status(_reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
+            else:
+                raise error
 
         # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
         if blocked and twitter_sauce:
             self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
             api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたのアートワークを盗み、私にあなたのクレジットを表示することをブロックしました。
 https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
-https://help.twitter.com/forms/dmca""", in_reply_to_status_id=reply.id, auto_populate_reply_metadata=True)
+https://help.twitter.com/forms/dmca""", in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
