@@ -32,6 +32,8 @@ Here is a list of Twitter accounts that have blocked the official @saucenaopls b
 * @LewdCult (Blocked 07/02/2020) (NSFW)
 * @Yumi69x2 (Blocked 06/29/2020) (NSFW)
 * @love_image__H (Blocked 06/30/2020) (NSFW)
+* @DreaMGGAMING (Blocked 07/03/2020)
+* @eroani2020 (Blocked 07/05/2020) (NSFW)
 * @iJaIter (Blocked 06/30/2020)
 
 You can still mention me in the comments of these posts and I can reply to you regardless, this list is compiled more for transparency reasons and to call out are thieves who do not provide acceptable credit for the artwork their accounts repost.

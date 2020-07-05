@@ -225,7 +225,14 @@ class TwitterSauce:
                     # Process the tweet for media content
                     self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
                     tweet_parser = TweetParser(tweet)
-                    tweet_parser.find_closest_media()
+                    try:
+                        tweet_parser.find_closest_media()
+                    except tweepy.error.TweepError as error:
+                        if error.api_code == 179:
+                            self.log.error(f"[SEARCH] We do not have permission to view tweet {tweet.id}; skipping")
+                            continue
+
+                        raise error
                     self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {tweet_parser.media[0]}")
 
                     # Get the sauce
