@@ -29,7 +29,7 @@ Here is a list of Twitter accounts that have blocked the official @saucenaopls b
 * @WaifuMenu (Blocked 06/23/2020)
 * @WaifuCult (Blocked 06/29/2020)
 * @WaifuVibe (Blocked 07/02/2020)
-* @PrincessKeriana (Blocked 07/08/2020)
+* @PrincessKeriana (Blocked 07/08/2020) (NSFW)
 * @LewdCult (Blocked 07/02/2020) (NSFW)
 * @Yumi69x2 (Blocked 06/29/2020) (NSFW)
 * @love_image__H (Blocked 06/30/2020) (NSFW)
