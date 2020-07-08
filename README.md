@@ -5,17 +5,16 @@ An open-source Twitter bot that utilizes the SauceNao API to find the source of 
 https://saucenao.com/
 
 # Official @saucenaopls account
-The official account for this Twitter bot can be found here:
-https://twitter.com/saucenaopls
+The official account for this Twitter bot can be found here: [@SauceNaoPls](https://twitter.com/saucenaopls)
 
 ## Officially monitored accounts
-These accounts are currently monitored by saucenaopls on Twitter. If you’d like to have your account monitored so I can provide automatic sauce lookups for you, just send me a DM on twitter or open an issue here and I’ll add you! No compensation is required, but a shoutout to the bot project is appreciated!
+These accounts are currently monitored by saucenaopls on Twitter. If you’d like to have your account monitored so I can provide automatic sauce lookups for you, just open an issue here and I’ll add you! No compensation is required, but a shoutout to the bot project is appreciated!
 
 * [@MeguminBot_](https://twitter.com/MeguminBot_) (Officially endorsed)
 * [@WaifuAesthetic](https://twitter.com/WaifuAesthetic) (Officially endorsed)
 * [@DDOAnime](https://twitter.com/DDOAnime) (Officially endorsed)
 
-## Art thieves I've been blocked by
+## Art thieves SauceBot has been blocked by
 Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit because they don't want to share the attention they receive.
 
 This post offers some insight into the mindsets of people like this,
@@ -24,11 +23,13 @@ https://twitter.com/_kairy_draws_/status/1276653871448961028
 
 Here is a list of Twitter accounts that have blocked the official @saucenaopls bot for crediting artwork they've reposted.
 
+* @AnimeHentaiFans (Blocked 07/08/2020) (NSFW)
 * @LewdRealm (Blocked 05/27/2020)
 * @WaifuSupply (Blocked 05/28/2020)
 * @WaifuMenu (Blocked 06/23/2020)
 * @WaifuCult (Blocked 06/29/2020)
 * @WaifuVibe (Blocked 07/02/2020)
+* @PrincessKeriana (Blocked 07/08/2020)
 * @LewdCult (Blocked 07/02/2020) (NSFW)
 * @Yumi69x2 (Blocked 06/29/2020) (NSFW)
 * @love_image__H (Blocked 06/30/2020) (NSFW)
@@ -37,6 +38,10 @@ Here is a list of Twitter accounts that have blocked the official @saucenaopls b
 * @iJaIter (Blocked 06/30/2020)
 
 You can still mention me in the comments of these posts and I can reply to you regardless, this list is compiled more for transparency reasons and to call out are thieves who do not provide acceptable credit for the artwork their accounts repost.
+
+**Additionally, please be aware that attempting to block SauceBot may result in the bot automatically contacting the original artists with DMCA takedown instructions for your posts.**
+
+Providing artists with credit is not something we believe should be considered optional. Furthermore, attempting to deny original artists credit is toxic behavior and we will act within our power to deplatform accounts which actively work to deny original artists the credit they are entitled to.
 
 # Documentation
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the example configuration file, [**config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**, then set the configuration variables accordingly.
