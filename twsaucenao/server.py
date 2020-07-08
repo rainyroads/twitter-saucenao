@@ -1,9 +1,12 @@
 import asyncio
 import hashlib
 import logging
+import os
 import reprlib
+import tempfile
 from typing import *
 
+import aiohttp
 import tweepy
 from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource, PixivSource, \
     MangaSource, BooruSource
@@ -262,7 +265,22 @@ class TwitterSauce:
 
         # Look up the sauce
         try:
-            sauce = await self.sauce.from_url(media)
+            if config.getboolean('SauceNao', 'download_files', fallback=False):
+                self.log.debug("Downloading image from Twitter")
+                fd, path = tempfile.mkstemp()
+                try:
+                    with os.fdopen(fd, 'wb') as tmp:
+                        async with aiohttp.ClientSession() as session:
+                            async with await session.get(media) as response:
+                                image = await response.read()
+                        tmp.write(image)
+                        sauce = await self.sauce.from_file(path)
+                finally:
+                    os.remove(path)
+            else:
+                self.log.debug("Performing remote URL lookup")
+                sauce = await self.sauce.from_url(media)
+
             if not sauce.results:
                 self._cached_results[url_hash] = None
                 return None
