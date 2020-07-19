@@ -7,7 +7,7 @@ https://saucenao.com/
 # Official @saucenaopls account
 The official account for the original Twitter bot by FujiMakoto can be found here: [@SauceNaoPls](https://twitter.com/saucenaopls)
 
-# Our stance on creditng artists
+# Our stance on crediting artists
 **Please be aware that attempting to block SauceBot may result in the bot automatically contacting the original artists with DMCA takedown instructions for your posts.**
 
 Providing artists with credit is not something we believe should be considered optional. Furthermore, attempting to deny original artists credit is toxic behavior and we will act within our power to deplatform accounts which actively work to deny original artists the credit they are entitled to.
