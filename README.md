@@ -1,47 +1,18 @@
 # twitter-saucenao
 [![Twitter Follow](https://img.shields.io/twitter/follow/saucenaopls)](https://twitter.com/saucenaopls) [![GitHub](https://img.shields.io/github/license/FujiMakoto/twitter-saucenao)](https://github.com/FujiMakoto/twitter-saucenao/blob/master/LICENSE) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/fujimakoto/twitter-saucenao)](https://github.com/FujiMakoto/twitter-saucenao/releases) [![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/fujimakoto/twitter-saucenao/latest)](https://github.com/FujiMakoto/twitter-saucenao/releases)
 
-An open-source Twitter bot that utilizes the SauceNao API to find the source of images or anime screencaps.
+A fork of the open-source Twitter bot that utilizes the SauceNao API to find the source of images or anime screencaps.
 https://saucenao.com/
 
 # Official @saucenaopls account
-The official account for this Twitter bot can be found here: [@SauceNaoPls](https://twitter.com/saucenaopls)
+The official account for the original Twitter bot by FukiMakoto can be found here: [@SauceNaoPls](https://twitter.com/saucenaopls)
 
-## Officially monitored accounts
-These accounts are currently monitored by saucenaopls on Twitter. If you’d like to have your account monitored so I can provide automatic sauce lookups for you, just open an issue here and I’ll add you! No compensation is required, but a shoutout to the bot project is appreciated!
-
-* [@MeguminBot_](https://twitter.com/MeguminBot_) (Officially endorsed)
-* [@WaifuAesthetic](https://twitter.com/WaifuAesthetic) (Officially endorsed)
-* [@DDOAnime](https://twitter.com/DDOAnime) (Officially endorsed)
-
-## Art thieves SauceBot has been blocked by
-Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit because they don't want to share the attention they receive.
-
-This post offers some insight into the mindsets of people like this,
-
-https://twitter.com/_kairy_draws_/status/1276653871448961028
-
-Here is a list of Twitter accounts that have blocked the official @saucenaopls bot for crediting artwork they've reposted.
-
-* @AnimeHentaiFans (Blocked 07/08/2020) (NSFW)
-* @LewdRealm (Blocked 05/27/2020)
-* @WaifuSupply (Blocked 05/28/2020)
-* @WaifuMenu (Blocked 06/23/2020)
-* @WaifuCult (Blocked 06/29/2020)
-* @WaifuVibe (Blocked 07/02/2020)
-* @PrincessKeriana (Blocked 07/08/2020) (NSFW)
-* @LewdCult (Blocked 07/02/2020) (NSFW)
-* @Yumi69x2 (Blocked 06/29/2020) (NSFW)
-* @love_image__H (Blocked 06/30/2020) (NSFW)
-* @DreaMGGAMING (Blocked 07/03/2020)
-* @eroani2020 (Blocked 07/05/2020) (NSFW)
-* @iJaIter (Blocked 06/30/2020)
-
-You can still mention me in the comments of these posts and I can reply to you regardless, this list is compiled more for transparency reasons and to call out are thieves who do not provide acceptable credit for the artwork their accounts repost.
-
-**Additionally, please be aware that attempting to block SauceBot may result in the bot automatically contacting the original artists with DMCA takedown instructions for your posts.**
+# Our stance on creditng artists
+**Please be aware that attempting to block SauceBot may result in the bot automatically contacting the original artists with DMCA takedown instructions for your posts.**
 
 Providing artists with credit is not something we believe should be considered optional. Furthermore, attempting to deny original artists credit is toxic behavior and we will act within our power to deplatform accounts which actively work to deny original artists the credit they are entitled to.
+
+Furthermore, please remember that it takes a long time to create a work of art and the amount of time and effort these artists put into their art is nothing compared to the amount of time needed to credit them with a simple hyperlink
 
 # Documentation
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the example configuration file, [**config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**, then set the configuration variables accordingly.
