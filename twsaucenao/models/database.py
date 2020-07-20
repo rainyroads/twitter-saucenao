@@ -22,7 +22,7 @@ else:
 class TweetCache(db.Entity):
     tweet_id        = PrimaryKey(int, size=64)
     data            = Required(Json)
-    blocked         = Required(bool)
+    blocked         = Optional(bool, sql_default=False)
     has_media       = Optional(bool, sql_default=False)
 
     @staticmethod
