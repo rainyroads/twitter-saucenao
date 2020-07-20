@@ -1,3 +1,6 @@
+__Japanese language available below__
+
+__以下で利用可能な日本語__
 # DMCA Instructions
 
 If you were redirected here by Saucefinder, that means that someone has been reposting your artwork without credit and has blocked the bot in response to crediting you as the original artist.
