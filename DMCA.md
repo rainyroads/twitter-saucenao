@@ -26,7 +26,7 @@ Do not contact them. Just submit a DMCA notice and Twitter will remove the conte
 ### Malicious users versus Non-Malicious users
 Not all accounts that repost artwork are malicious. If you have been directed here by SauceBot, it means the account in question is malicious.
 
-We only qualify an account as malicious when they:
+We only designate an account as malicious when they:
 1) Do not provide credit to the original artists themselves (in the means of a link to the original artist and a mention to the original Twitter account where applicable)
 2) Block accounts of users that provide credit to the said artists for them
 
