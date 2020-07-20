@@ -1,6 +1,6 @@
 # DMCA Instructions
 
-If you were redirected here by SauceBot, that means that someone has been reposting your artwork without credit and has blocked the bot in response to crediting you as the original artist.
+If you were redirected here by Saucefinder, that means that someone has been reposting your artwork without credit and has blocked the bot in response to crediting you as the original artist.
 
 That's pretty awful, isn't it?
 
@@ -26,7 +26,7 @@ Do not contact them. Just submit a DMCA notice and Twitter will remove the conte
 ### Malicious users versus Non-Malicious users
 Not all accounts that repost artwork are malicious. If you have been directed here by SauceBot, it means the account in question is malicious.
 
-We only quality an account as malicious when they:
+We only qualify an account as malicious when they:
 1) Do not provide credit to the original artists themselves (in the means of a link to the original artist and a mention to the original Twitter account where applicable)
 2) Block accounts of users that provide credit to the said artists for them
 
@@ -36,7 +36,7 @@ We only quality an account as malicious when they:
 
 # DMCAの手順
 
-SauceBotによってここにリダイレクトされた場合、それは誰かがあなたのアートワークをクレジットなしで再投稿していて、元のアーティストとしてあなたをクレジットしたことに応じてボットをブロックしたことを意味します。
+Saucefinderによってここにリダイレクトされた場合、それは誰かがあなたのアートワークをクレジットなしで再投稿していて、元のアーティストとしてあなたをクレジットしたことに応じてボットをブロックしたことを意味します。
 
 それはかなりひどいですね。
 
