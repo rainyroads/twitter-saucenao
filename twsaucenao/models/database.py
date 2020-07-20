@@ -8,7 +8,6 @@ from pysaucenao import GenericSource
 from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.log import log
-from twsaucenao.twitter import TweetManager
 
 db = Database()
 
@@ -43,7 +42,7 @@ class TweetCache(db.Entity):
     # noinspection PyUnresolvedReferences
     @staticmethod
     @db_session
-    def set(tweet: tweepy.models.Status, blocked: bool = False) -> 'TweetCache':
+    def set(tweet: tweepy.models.Status, has_media: bool = False, blocked: bool = False) -> 'TweetCache':
         # Delete any existing entry for this server
         cache = TweetCache.get(tweet_id=tweet.id)
         if cache:
@@ -55,7 +54,7 @@ class TweetCache(db.Entity):
                 tweet_id=tweet.id,
                 data=tweet._json,
                 blocked=blocked,
-                has_media=bool(TweetManager.extract_media(tweet))
+                has_media=has_media
         )
         return cache
 
