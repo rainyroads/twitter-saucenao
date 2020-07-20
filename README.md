@@ -33,6 +33,6 @@ This fork was made possible by FujiMakoto and SauceNAO so please support them in
 Also, if you want to debate about the issue of crediting artists in art reposts, I am more than willing to debate with you through a live debate in a social media platform of your choice! Just raise an issue here or [DM me in Twitter!](https://twitter.com/satoshi_140) (^-^)
 
 # Disclaimer
-We are not affiliated with FujiMakoto, Pixiv, and SauceNAO. All the actions made by our bot are made solely on our discretion and the responsibility of Twitter accounts getting deleted and DMCA takedowns made through this bot is ours.
+We are not affiliated with FujiMakoto, Pixiv, and SauceNAO. All the actions made by our bot are made solely on our discretion.
 
 **TL;DR: If we did something that made you mad, please don't blame FujiMakoto, Pixiv, and SauceNAO.** (^-^)
