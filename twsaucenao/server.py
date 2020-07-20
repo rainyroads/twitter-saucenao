@@ -402,5 +402,5 @@ class TwitterSauce:
         if blocked and twitter_sauce:
             self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
             api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたのアートワークを盗み、私にあなたのクレジットを表示することをブロックしました。
-https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
+https://github.com/Satoshiii-DCS/twitter-saucefinder/blob/master/DMCA.md
 https://help.twitter.com/forms/dmca""", in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
