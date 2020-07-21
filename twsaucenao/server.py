@@ -236,7 +236,7 @@ class TwitterSauce:
         # Look up the sauce
         try:
             if config.getboolean('SauceNao', 'download_files', fallback=False):
-                self.log.debug(f"{log_index} Downloading image from Twitter")
+                self.log.debug(f"[{log_index}] Downloading image from Twitter")
                 fd, path = tempfile.mkstemp()
                 try:
                     with os.fdopen(fd, 'wb') as tmp:
