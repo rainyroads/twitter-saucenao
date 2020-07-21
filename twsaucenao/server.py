@@ -220,7 +220,7 @@ class TwitterSauce:
                     continue
 
     async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: Optional[str] = None,
-                        trigger: str = TRIGGER_MENTION) -> Optional[TweetSauceCache]:
+                        trigger: str = TRIGGER_MENTION) -> TweetSauceCache:
         """
         Get the sauce of a media tweet
         """
@@ -252,15 +252,16 @@ class TwitterSauce:
                 sauce = await self.sauce.from_url(media)
 
             if not sauce.results:
-                TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
-                return None
+                sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
+                return sauce_cache
         except ShortLimitReachedException:
             self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
             await asyncio.sleep(30.0)
             return await self.get_sauce(tweet_cache, index_no, log_index)
         except SauceNaoException as e:
             self.log.error(f"[{log_index}] SauceNao exception raised: {e}")
-            return None
+            sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, index_no=index_no, trigger=trigger)
+            return sauce_cache
 
         sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
         return sauce_cache
