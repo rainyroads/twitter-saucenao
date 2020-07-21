@@ -107,13 +107,13 @@ class TweetSauceCache(db.Entity):
 
     @staticmethod
     @db_session
-    def filter_and_set(tweet: TweetCache, sauce_results: SauceNaoResults, index_no: int = 0,
+    def filter_and_set(tweet: TweetCache, sauce_results: typing.Optional[SauceNaoResults], index_no: int = 0,
                        trigger: str = TRIGGER_MENTION) -> 'TweetSauceCache':
         """
         Cache a SauceNao query
         Args:
             tweet (TweetCache): Cached Tweet entry
-            sauce_results (SauceNaoResults): Results to filter and process
+            sauce_results (Optional[SauceNaoResults]): Results to filter and process
             index_no (int): The media indice for tweets with multiple media uploads
             trigger (str): The event that triggered the sauce lookup (purely for analytics)
 
@@ -136,7 +136,7 @@ class TweetSauceCache(db.Entity):
             )
             return _cache
 
-        if not sauce_results.results:
+        if not sauce_results or not sauce_results.results:
             return no_results()
 
         # Filter the results, prioritizing anime first, then Pixiv, then anything else
