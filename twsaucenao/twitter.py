@@ -52,7 +52,7 @@ class TweetManager:
         # Cache and return
         return TweetCache.set(_tweet, bool(self.extract_media(_tweet)), blocked=blocked)
 
-    def get_closest_media(self, tweet) -> Tuple[TweetCache, List[str]]:
+    def get_closest_media(self, tweet) -> Tuple[TweetCache, TweetCache, List[str]]:
         """
         Find the closet media post associated with this tweet.
         This could be this tweet itself if someone has mentioned us with an upload.
@@ -66,12 +66,13 @@ class TweetManager:
             TwSauceNoMediaException: Raised if no media entities can be found associated with this tweet
 
         Returns:
-            List[str]
+            Tuple[TweetCache, TweetCache, List[str]]: First entry is the original tweet that triggered the lookup,
+            the second entry is the tweet we pulled media from. Third item is the actual list of media.
         """
         # If the tweet itself has media to search for, return it now
         if self.extract_media(tweet):
             cache = TweetCache.set(tweet, True)
-            return cache, self.extract_media(tweet)
+            return cache, cache, self.extract_media(tweet)
         else:
             _cache = TweetCache.set(tweet)
 
@@ -108,7 +109,7 @@ class TweetManager:
         else:
             raise TwSauceNoMediaException
 
-        return _cache, self.extract_media(tweet)
+        return _cache, cache, self.extract_media(tweet)
 
     def _is_bot_reply(self, tweet) -> bool:
         """
