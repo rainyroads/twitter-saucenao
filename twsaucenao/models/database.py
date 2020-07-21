@@ -72,7 +72,7 @@ class TweetCache(db.Entity):
 
 
 class TweetSauceCache(db.Entity):
-    tweet_id        = Required(TweetCache)
+    tweet_id        = Required(int, size=64)
     index_no        = Required(int, size=8, index=True)
     sauce_header    = Optional(Json)
     sauce_data      = Optional(Json)
@@ -109,7 +109,7 @@ class TweetSauceCache(db.Entity):
             TweetSauceCache
         """
         # Delete any existing cache entry. This is just for safety; it shouldn't actually be triggered.
-        cache = TweetSauceCache.get(tweet_id=tweet, index_no=index_no)
+        cache = TweetSauceCache.get(tweet_id=tweet.tweet_id, index_no=index_no)
         if cache:
             log.warning(f'[SYSTEM] Overwriting sauce cache entry for tweet {tweet.tweet_id} early')
             cache.delete()
@@ -117,7 +117,7 @@ class TweetSauceCache(db.Entity):
         # If there are no results, we log a cache entry anyways to prevent making additional queries
         if not sauce_results.results:
             cache = TweetSauceCache(
-                    tweet_id=tweet,
+                    tweet_id=tweet.tweet_id,
                     index_no=index_no,
             )
             return cache
@@ -143,11 +143,11 @@ class TweetSauceCache(db.Entity):
             sauce = sauce_results.results[0]
 
         cache = TweetSauceCache(
-                tweet_id=tweet,
+                tweet_id=tweet.tweet_id,
                 index_no=index_no,
                 sauce_header=sauce.header,
                 sauce_data=sauce.data,
-                sauce_class=type(sauce_results).__name__
+                sauce_class=type(sauce).__name__
         )
         return cache
 
