@@ -14,7 +14,7 @@ from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, Sauc
 from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.errors import *
-from twsaucenao.models.database import TweetCache, TweetSauceCache
+from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SEARCH, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
 from twsaucenao.twitter import TweetManager
 
@@ -86,19 +86,11 @@ class TwitterSauce:
                     continue
 
                 # Attempt to parse the tweets media content
-                cache, media = self.get_closest_media(tweet, self.my.screen_name)
+                original_cache, media_cache, media = self.get_closest_media(tweet, self.my.screen_name)
 
                 # Get the sauce!
-                sauce_cache = await self.get_sauce(cache, log_index=self.my.screen_name)
-                sauce = sauce_cache.sauce
-
-                # Similarity requirement check
-                if sauce and (sauce.similarity < self.minsim_mentioned):
-                    self.log.info(
-                        f"[{self.my.screen_name}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
-                    sauce = None
-
-                self.send_reply(cache, sauce_cache, blocked=cache.blocked)
+                sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
+                self.send_reply(original_cache, sauce_cache, blocked=media_cache.blocked)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
@@ -152,22 +144,17 @@ class TwitterSauce:
                         self.log.info(f"[{account}] Retweeted post; ignoring")
                         continue
 
-                    cache, media = self.get_closest_media(tweet, account)
+                    original_cache, media_cache, media = self.get_closest_media(tweet, account)
                     self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]}")
 
                     # Get the sauce
-                    sauce_cache = await self.get_sauce(cache, log_index=account)
+                    sauce_cache = await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED)
                     sauce = sauce_cache.sauce
-
-                    # Similarity requirement check
-                    if sauce and (sauce.similarity < self.minsim_monitored):
-                        self.log.info(f"[{account}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
-                        sauce = None
 
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[{account}] Failed to find sauce for tweet {tweet.id}")
 
-                    self.send_reply(tweet, sauce_cache, False)
+                    self.send_reply(original_cache, sauce_cache, False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[{account}] No sauce found for tweet {tweet.id}")
                     continue
@@ -219,26 +206,21 @@ class TwitterSauce:
                 try:
                     # Process the tweet for media content
                     self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
-                    cache, media = self.get_closest_media(tweet, 'SEARCH')
+                    original_cache, media_cache, media = self.get_closest_media(tweet, 'SEARCH')
                     self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]}")
 
                     # Get the sauce
-                    sauce_cache = await self.get_sauce(cache, log_index='SEARCH')
+                    sauce_cache = await self.get_sauce(media_cache, log_index='SEARCH', trigger=TRIGGER_SEARCH)
                     sauce = sauce_cache.sauce
                     self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
-
-                    # Similarity requirement check
-                    if sauce and (sauce.similarity < self.minsim_searching):
-                        self.log.info(f"[SEARCH] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
-                        sauce = None
-
-                    self.send_reply(tweet, sauce_cache, False)
+                    self.send_reply(original_cache, sauce_cache, False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
                     continue
 
-    async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: Optional[str] = None) -> Optional[TweetSauceCache]:
+    async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: Optional[str] = None,
+                        trigger: str = TRIGGER_MENTION) -> Optional[TweetSauceCache]:
         """
         Get the sauce of a media tweet
         """
@@ -247,7 +229,7 @@ class TwitterSauce:
         # Have we cached the sauce already?
         cache = TweetSauceCache.fetch(tweet_cache.tweet_id, index_no)
         if cache:
-            return cache.sauce
+            return cache
 
         media = TweetManager.extract_media(tweet_cache.tweet)[index_no]
 
@@ -270,7 +252,7 @@ class TwitterSauce:
                 sauce = await self.sauce.from_url(media)
 
             if not sauce.results:
-                TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no)
+                TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
                 return None
         except ShortLimitReachedException:
             self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
@@ -280,10 +262,10 @@ class TwitterSauce:
             self.log.error(f"[{log_index}] SauceNao exception raised: {e}")
             return None
 
-        sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no)
+        sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
         return sauce_cache
 
-    def get_closest_media(self, tweet, log_index: Optional[str] = None) -> Optional[Tuple[TweetCache, List[str]]]:
+    def get_closest_media(self, tweet, log_index: Optional[str] = None) -> Optional[Tuple[TweetCache, TweetCache, List[str]]]:
         """
         Attempt to get the closest media element associated with this tweet and handle any errors if they occur
         Args:
@@ -296,7 +278,7 @@ class TwitterSauce:
         log_index = log_index or 'SYSTEM'
 
         try:
-            cache, media = self.twitter.get_closest_media(tweet)
+            original_cache, media_cache, media = self.twitter.get_closest_media(tweet)
         except tweepy.error.TweepError as error:
             # Error 136 means we are blocked
             if error.api_code == 136:
@@ -323,7 +305,7 @@ class TwitterSauce:
                 raise TwSauceNoMediaException
 
         # Still here? Yay! We have something then.
-        return cache, media
+        return original_cache, media_cache, media
 
     def send_reply(self, tweet_cache: TweetCache, sauce_cache: TweetSauceCache, requested=True, blocked=False) -> None:
         """
