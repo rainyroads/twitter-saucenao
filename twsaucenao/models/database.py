@@ -1,3 +1,4 @@
+import time
 import typing
 
 import pysaucenao
@@ -30,6 +31,7 @@ class TweetCache(db.Entity):
     data            = Required(Json)
     blocked         = Optional(bool, sql_default=False)
     has_media       = Optional(bool, sql_default=False)
+    created_at      = Required(int, size=64, index=True)
 
     @staticmethod
     @db_session
@@ -62,7 +64,8 @@ class TweetCache(db.Entity):
                 tweet_id=tweet.id,
                 data=tweet._json,
                 blocked=blocked,
-                has_media=has_media
+                has_media=has_media,
+                created_at=int(time.time())
         )
         return cache
 
@@ -83,6 +86,7 @@ class TweetSauceCache(db.Entity):
     sauce_data      = Optional(Json)
     sauce_class     = Optional(str, 255)
     trigger         = Optional(str, 50)
+    created_at      = Required(int, size=64, index=True)
 
     @staticmethod
     @db_session
@@ -127,7 +131,8 @@ class TweetSauceCache(db.Entity):
             _cache = TweetSauceCache(
                     tweet_id=tweet.tweet_id,
                     index_no=index_no,
-                    trigger=trigger
+                    trigger=trigger,
+                    created_at=int(time.time())
             )
             return _cache
 
@@ -166,7 +171,8 @@ class TweetSauceCache(db.Entity):
                 sauce_header=sauce.header,
                 sauce_data=sauce.data,
                 sauce_class=type(sauce).__name__,
-                trigger=trigger
+                trigger=trigger,
+                created_at=int(time.time())
         )
         return cache
 
