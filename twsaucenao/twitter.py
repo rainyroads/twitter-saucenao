@@ -72,6 +72,8 @@ class TweetManager:
         if self.extract_media(tweet):
             cache = TweetCache.set(tweet, True)
             return cache, self.extract_media(tweet)
+        else:
+            _cache = TweetCache.set(tweet)
 
         if self._is_bot_reply(tweet):
             self.log.info('Skipping a tweet that is a comment on a post by the bot account')
@@ -106,7 +108,7 @@ class TweetManager:
         else:
             raise TwSauceNoMediaException
 
-        return cache, self.extract_media(tweet)
+        return _cache, self.extract_media(tweet)
 
     def _is_bot_reply(self, tweet) -> bool:
         """
