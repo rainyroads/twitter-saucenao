@@ -19,6 +19,11 @@ else:
     db.bind(provider='sqlite', filename='database.sqlite', create_db=True)
 
 
+TRIGGER_MENTION = 'mention'
+TRIGGER_MONITORED = 'monitored'
+TRIGGER_SEARCH = 'search'
+
+
 # noinspection PyMethodParameters
 class TweetCache(db.Entity):
     tweet_id        = PrimaryKey(int, size=64)
@@ -77,6 +82,7 @@ class TweetSauceCache(db.Entity):
     sauce_header    = Optional(Json)
     sauce_data      = Optional(Json)
     sauce_class     = Optional(str, 255)
+    trigger         = Optional(str, 50)
 
     @staticmethod
     @db_session
@@ -97,13 +103,15 @@ class TweetSauceCache(db.Entity):
 
     @staticmethod
     @db_session
-    def filter_and_set(tweet: TweetCache, sauce_results: SauceNaoResults, index_no: int = 0) -> 'TweetSauceCache':
+    def filter_and_set(tweet: TweetCache, sauce_results: SauceNaoResults, index_no: int = 0,
+                       trigger: str = TRIGGER_MENTION) -> 'TweetSauceCache':
         """
         Cache a SauceNao query
         Args:
             tweet (TweetCache): Cached Tweet entry
             sauce_results (SauceNaoResults): Results to filter and process
             index_no (int): The media indice for tweets with multiple media uploads
+            trigger (str): The event that triggered the sauce lookup (purely for analytics)
 
         Returns:
             TweetSauceCache
@@ -119,6 +127,7 @@ class TweetSauceCache(db.Entity):
             cache = TweetSauceCache(
                     tweet_id=tweet.tweet_id,
                     index_no=index_no,
+                    trigger=trigger
             )
             return cache
 
@@ -147,7 +156,8 @@ class TweetSauceCache(db.Entity):
                 index_no=index_no,
                 sauce_header=sauce.header,
                 sauce_data=sauce.data,
-                sauce_class=type(sauce).__name__
+                sauce_class=type(sauce).__name__,
+                trigger=trigger
         )
         return cache
 
