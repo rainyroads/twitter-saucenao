@@ -69,16 +69,17 @@ class TweetManager:
             Tuple[TweetCache, TweetCache, List[str]]: First entry is the original tweet that triggered the lookup,
             the second entry is the tweet we pulled media from. Third item is the actual list of media.
         """
+        # Check if this is a reply to one of our posts first
+        if self._is_bot_reply(tweet):
+            self.log.info('Skipping a tweet that is a comment on a post by the bot account')
+            raise TwSauceNoMediaException
+
         # If the tweet itself has media to search for, return it now
         if self.extract_media(tweet):
             cache = TweetCache.set(tweet, True)
             return cache, cache, self.extract_media(tweet)
         else:
             _cache = TweetCache.set(tweet)
-
-        if self._is_bot_reply(tweet):
-            self.log.info('Skipping a tweet that is a comment on a post by the bot account')
-            raise TwSauceNoMediaException
 
         # The tweet itself doesn't have any media entities. Time to traverse and look for one
         while tweet.in_reply_to_status_id:
