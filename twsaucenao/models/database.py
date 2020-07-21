@@ -128,6 +128,7 @@ class TweetSauceCache(db.Entity):
 
         # If there are no results, we log a cache entry anyways to prevent making additional queries
         def no_results():
+            log.info(f'[SYSTEM] Logging a failed Sauce lookup for tweet {tweet.tweet_id} on indice {index_no}')
             _cache = TweetSauceCache(
                     tweet_id=tweet.tweet_id,
                     index_no=index_no,
@@ -143,7 +144,7 @@ class TweetSauceCache(db.Entity):
         sauce = None
 
         # Do we have an anime?
-        similarity_cutoff = int(config.get('Twitter', f"min_similarity_{trigger}"))
+        similarity_cutoff = int(config.getfloat('Twitter', f"min_similarity_{trigger}"))
         for result in sauce_results.results:
             if (result.similarity >= max(similarity_cutoff, 75)) and isinstance(result, VideoSource):
                 sauce = result
@@ -165,6 +166,7 @@ class TweetSauceCache(db.Entity):
             log.debug(f"[SYSTEM] Sauce potentially found for tweet {tweet.tweet_id}, but it didn't meet the minimum {trigger} similarity requirements")
             return no_results()
 
+        log.info(f'[SYSTEM] Caching a successful sauce lookup query for tweet {tweet.tweet_id} on indice {index_no}')
         cache = TweetSauceCache(
                 tweet_id=tweet.tweet_id,
                 index_no=index_no,
