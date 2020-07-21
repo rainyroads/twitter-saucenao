@@ -28,7 +28,7 @@ class TweetManager:
             TweetCache
         """
         # Attempt to load from cache first
-        tweet = TweetCache.get(tweet_id)
+        tweet = TweetCache.fetch(tweet_id)
         if tweet:
             return tweet
 
