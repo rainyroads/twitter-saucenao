@@ -4,6 +4,7 @@ import pysaucenao
 import tweepy
 from pony.orm import *
 from pysaucenao import GenericSource
+from pysaucenao.containers import PixivSource, SauceNaoResults, VideoSource
 
 from twsaucenao.api import api
 from twsaucenao.config import config
@@ -29,7 +30,7 @@ class TweetCache(db.Entity):
     @db_session
     def fetch(tweet_id: int) -> 'TweetCache':
         """
-        Gets the SauceNao API key for the specified guild
+        Attempt to retrieve a tweet from our local cache
         Args:
             tweet_id(int): Tweet ID to look up
 
@@ -37,6 +38,8 @@ class TweetCache(db.Entity):
             typing.Optional[TweetCache]
         """
         tweet = TweetCache.get(tweet_id=tweet_id)
+        if tweet:
+            log.debug(f'[SYSTEM] Tweet {tweet_id} cache hit')
         return tweet
 
     # noinspection PyUnresolvedReferences
@@ -68,11 +71,85 @@ class TweetCache(db.Entity):
         return tweepy.models.Status.parse(api, self.data)
 
 
-class TweetSauceCache(TweetCache):
+class TweetSauceCache(db.Entity):
+    tweet_id        = Required(TweetCache)
     index_no        = Required(int, size=8, index=True)
-    source_header   = Required(Json)
-    source_data     = Optional(Json)
+    sauce_header    = Optional(Json)
+    sauce_data      = Optional(Json)
     sauce_class     = Optional(str, 255)
+
+    @staticmethod
+    @db_session
+    def fetch(tweet_id: int, index_no: int = 0) -> 'TweetSauceCache':
+        """
+        Attempt to load a cached saucenao lookup
+        Args:
+            tweet_id(int): Tweet ID to look up
+            index_no (int): The media indice for tweets with multiple media uploads
+
+        Returns:
+            typing.Optional[TweetSauceCache]
+        """
+        sauce = TweetSauceCache.get(tweet_id=tweet_id, index_no=index_no)
+        if sauce:
+            log.debug(f'[SYSTEM] Sauce cache hit on index {index_no} for tweet {tweet_id}')
+        return sauce
+
+    @staticmethod
+    @db_session
+    def filter_and_set(tweet: TweetCache, sauce_results: SauceNaoResults, index_no: int = 0) -> 'TweetSauceCache':
+        """
+        Cache a SauceNao query
+        Args:
+            tweet (TweetCache): Cached Tweet entry
+            sauce_results (SauceNaoResults): Results to filter and process
+            index_no (int): The media indice for tweets with multiple media uploads
+
+        Returns:
+            TweetSauceCache
+        """
+        # Delete any existing cache entry. This is just for safety; it shouldn't actually be triggered.
+        cache = TweetSauceCache.get(tweet_id=tweet, index_no=index_no)
+        if cache:
+            log.warning(f'[SYSTEM] Overwriting sauce cache entry for tweet {tweet.tweet_id} early')
+            cache.delete()
+
+        # If there are no results, we log a cache entry anyways to prevent making additional queries
+        if not sauce_results.results:
+            cache = TweetSauceCache(
+                    tweet_id=tweet,
+                    index_no=index_no,
+            )
+            return cache
+
+        # Filter the results, prioritizing anime first, then Pixiv, then anything else
+        sauce = None
+
+        # Do we have an anime?
+        for result in sauce_results.results:
+            if (result.similarity >= 75) and isinstance(result, VideoSource):
+                sauce = result
+                break
+
+        # No? Any relevant Pixiv entries?
+        if not sauce:
+            for result in sauce_results.results:
+                if (result.similarity >= 75) and isinstance(result, PixivSource):
+                    sauce = result
+                    break
+
+        # Still nothing? Just pick the best match then
+        if not sauce:
+            sauce = sauce_results.results[0]
+
+        cache = TweetSauceCache(
+                tweet_id=tweet,
+                index_no=index_no,
+                sauce_header=sauce.header,
+                sauce_data=sauce.data,
+                sauce_class=type(sauce_results).__name__
+        )
+        return cache
 
     @property
     def sauce(self) -> typing.Optional[GenericSource]:
