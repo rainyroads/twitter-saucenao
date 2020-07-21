@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import tweepy
 
@@ -52,7 +52,7 @@ class TweetManager:
         # Cache and return
         return TweetCache.set(_tweet, bool(self.extract_media(_tweet)), blocked=blocked)
 
-    def get_closest_media(self, tweet) -> List:
+    def get_closest_media(self, tweet) -> Tuple[TweetCache, List[str]]:
         """
         Find the closet media post associated with this tweet.
         This could be this tweet itself if someone has mentioned us with an upload.
@@ -66,11 +66,12 @@ class TweetManager:
             TwSauceNoMediaException: Raised if no media entities can be found associated with this tweet
 
         Returns:
-            Tweet
+            List[str]
         """
         # If the tweet itself has media to search for, return it now
         if self.extract_media(tweet):
-            return self.extract_media(tweet)
+            cache = TweetCache.set(tweet, True)
+            return cache, self.extract_media(tweet)
 
         if self._is_bot_reply(tweet):
             self.log.info('Skipping a tweet that is a comment on a post by the bot account')
@@ -102,6 +103,10 @@ class TweetManager:
                 break
 
             # Nothing yet? Continue until we hit the top of the chain
+        else:
+            raise TwSauceNoMediaException
+
+        return cache, self.extract_media(tweet)
 
     def _is_bot_reply(self, tweet) -> bool:
         """
