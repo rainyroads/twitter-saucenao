@@ -144,7 +144,7 @@ class TweetSauceCache(db.Entity):
         sauce = None
 
         # Do we have an anime?
-        similarity_cutoff = int(config.getfloat('Twitter', f"min_similarity_{trigger}"))
+        similarity_cutoff = int(config.getfloat('Twitter', f"min_similarity_{trigger}", fallback=50.0))
         for result in sauce_results.results:
             if (result.similarity >= max(similarity_cutoff, 75)) and isinstance(result, VideoSource):
                 sauce = result
