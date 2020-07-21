@@ -19,9 +19,9 @@ else:
     db.bind(provider='sqlite', filename='database.sqlite', create_db=True)
 
 
-TRIGGER_MENTION = 'mention'
+TRIGGER_MENTION = 'mentioned'
 TRIGGER_MONITORED = 'monitored'
-TRIGGER_SEARCH = 'search'
+TRIGGER_SEARCH = 'searching'
 
 
 # noinspection PyMethodParameters
@@ -123,33 +123,42 @@ class TweetSauceCache(db.Entity):
             cache.delete()
 
         # If there are no results, we log a cache entry anyways to prevent making additional queries
-        if not sauce_results.results:
-            cache = TweetSauceCache(
+        def no_results():
+            _cache = TweetSauceCache(
                     tweet_id=tweet.tweet_id,
                     index_no=index_no,
                     trigger=trigger
             )
-            return cache
+            return _cache
+
+        if not sauce_results.results:
+            return no_results()
 
         # Filter the results, prioritizing anime first, then Pixiv, then anything else
         sauce = None
 
         # Do we have an anime?
+        similarity_cutoff = config.get('Twitter', f"min_similarity_{trigger}")
         for result in sauce_results.results:
-            if (result.similarity >= 75) and isinstance(result, VideoSource):
+            if (result.similarity >= max(similarity_cutoff, 75)) and isinstance(result, VideoSource):
                 sauce = result
                 break
 
         # No? Any relevant Pixiv entries?
         if not sauce:
             for result in sauce_results.results:
-                if (result.similarity >= 75) and isinstance(result, PixivSource):
+                if (result.similarity >= max(similarity_cutoff, 75)) and isinstance(result, PixivSource):
                     sauce = result
                     break
 
         # Still nothing? Just pick the best match then
         if not sauce:
             sauce = sauce_results.results[0]
+
+        # Finally, make sure the sauce result actually meets our minimum similarity requirements
+        if (sauce.similarity < similarity_cutoff):
+            log.debug(f"[SYSTEM] Sauce potentially found for tweet {tweet.tweet_id}, but it didn't meet the minimum {trigger} similarity requirements")
+            return no_results()
 
         cache = TweetSauceCache(
                 tweet_id=tweet.tweet_id,
