@@ -1,4 +1,4 @@
-pysaucenao ~= 1.1.0
+pysaucenao ~= 1.1.1
 tweepy~=3.9.0
 pixivpy
 pony~=0.7.13
