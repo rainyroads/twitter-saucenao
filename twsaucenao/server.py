@@ -326,6 +326,9 @@ class TwitterSauce:
         if sauce is None:
             if requested:
                 media = TweetManager.extract_media(tweet)
+                if not media:
+                    return
+
                 google_url = f"https://www.google.com/searchbyimage?image_url={media[sauce_cache.index_no]}&safe=off"
 
                 api.update_status(
