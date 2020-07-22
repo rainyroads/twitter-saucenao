@@ -342,7 +342,7 @@ class TwitterSauce:
         repr.maxstring = 32
 
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
-        if sauce.index != 'H-Misc':
+        if sauce.index not in ['H-Misc', 'E-Hentai']:
             title = repr.repr(sauce.title).strip("'")
         else:
             repr.maxstring = 128
