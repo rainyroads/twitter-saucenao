@@ -14,13 +14,17 @@ from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, Sauc
 from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.errors import *
+from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SEARCH, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
-from twsaucenao.twitter import TweetParser
+from twsaucenao.twitter import TweetManager
 
 
 class TwitterSauce:
     def __init__(self):
         self.log = logging.getLogger(__name__)
+
+         # Tweet Cache Manager
+        self.twitter = TweetManager()
 
         # SauceNao
         self.minsim_mentioned = float(config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0))
@@ -67,7 +71,6 @@ class TwitterSauce:
             None
         """
         self.log.info(f"[{self.my.screen_name}] Retrieving mentions since tweet {self.since_id}")
-
         mentions = [*tweepy.Cursor(api.mentions_timeline, since_id=self.since_id, tweet_mode='extended').items()]
 
         # Filter tweets without a reply AND attachment
@@ -79,34 +82,15 @@ class TwitterSauce:
 
                 # Make sure we aren't mentioning ourselves
                 if tweet.author.id == self.my.id:
-                    self.log.debug(f"[{self.my.screen_name}] Ignoring a self-mentioning tweet")
+                    self.log.debug(f"[{self.my.screen_name}] Skipping a self-referencing tweet")
                     continue
 
                 # Attempt to parse the tweets media content
-                try:
-                    tweet_parser = TweetParser(tweet)
-                    tweet_parser.find_closest_media()
-                except tweepy.error.TweepError as error:
-                    if error.api_code == 136:
-                        self.log.warning(f"[{self.my.screen_name}] We were blocked by the author of a tweet we attempted to look-up")
-                        api.update_status(
-                                f"@{tweet.author.screen_name} Sorry, it looks like the author of this post has blocked us. For more information, please refer to:\nhttps://github.com/FujiMakoto/twitter-saucenao/#blocked-by",
-                                in_reply_to_status_id=tweet.id
-                        )
-                    else:
-                        self.log.error(f"[{self.my.screen_name}] {error.reason}")
-                    continue
+                original_cache, media_cache, media = self.get_closest_media(tweet, self.my.screen_name)
 
                 # Get the sauce!
-                sauce = await self.get_sauce(tweet_parser.media[0])
-
-                # Similarity requirement check
-                if sauce and (sauce.similarity < self.minsim_mentioned):
-                    self.log.info(
-                        f"[{self.my.screen_name}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
-                    sauce = None
-
-                self.send_reply(tweet, sauce, blocked=tweet_parser.blocked)
+                sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
+                self.send_reply(original_cache, media_cache, sauce_cache, blocked=media_cache.blocked)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
@@ -160,22 +144,17 @@ class TwitterSauce:
                         self.log.info(f"[{account}] Retweeted post; ignoring")
                         continue
 
-                    tweet_parser = TweetParser(tweet)
-                    tweet_parser.find_closest_media()
-                    self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {tweet_parser.media[0]}")
+                    original_cache, media_cache, media = self.get_closest_media(tweet, account)
+                    self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]}")
 
                     # Get the sauce
-                    sauce = await self.get_sauce(tweet_parser.media[0])
-
-                    # Similarity requirement check
-                    if sauce and (sauce.similarity < self.minsim_monitored):
-                        self.log.info(f"[{account}] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
-                        sauce = None
+                    sauce_cache = await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED)
+                    sauce = sauce_cache.sauce
 
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[{account}] Failed to find sauce for tweet {tweet.id}")
 
-                    self.send_reply(tweet, sauce, False)
+                    self.send_reply(original_cache, media_cache, sauce_cache, False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[{account}] No sauce found for tweet {tweet.id}")
                     continue
@@ -227,46 +206,37 @@ class TwitterSauce:
                 try:
                     # Process the tweet for media content
                     self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
-                    tweet_parser = TweetParser(tweet)
-                    try:
-                        tweet_parser.find_closest_media()
-                    except tweepy.error.TweepError as error:
-                        if error.api_code == 179:
-                            self.log.error(f"[SEARCH] We do not have permission to view tweet {tweet.id}; skipping")
-                            continue
-
-                        raise error
-                    self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {tweet_parser.media[0]}")
+                    original_cache, media_cache, media = self.get_closest_media(tweet, 'SEARCH')
+                    self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]}")
 
                     # Get the sauce
-                    sauce = await self.get_sauce(tweet_parser.media[0])
+                    sauce_cache = await self.get_sauce(media_cache, log_index='SEARCH', trigger=TRIGGER_SEARCH)
+                    sauce = sauce_cache.sauce
                     self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
-
-                    # Similarity requirement check
-                    if sauce and (sauce.similarity < self.minsim_searching):
-                        self.log.info(
-                            f"[SEARCH] Sauce potentially found for tweet {tweet.id}, but it didn't meet the minimum similarity requirements")
-                        sauce = None
-
-                    self.send_reply(tweet, sauce, False)
+                    self.send_reply(original_cache, media_cache, sauce_cache, False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
                     continue
 
-    async def get_sauce(self, media: str) -> Optional[GenericSource]:
+    async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: Optional[str] = None,
+                        trigger: str = TRIGGER_MENTION) -> TweetSauceCache:
         """
         Get the sauce of a media tweet
         """
-        # Have we cached this tweet already?
-        url_hash = hashlib.md5(media.encode()).hexdigest()
-        if url_hash in self._cached_results:
-            return self._cached_results[url_hash]
+                log_index = log_index or 'SYSTEM'
+
+        # Have we cached the sauce already?
+        cache = TweetSauceCache.fetch(tweet_cache.tweet_id, index_no)
+        if cache:
+            return cache
+
+        media = TweetManager.extract_media(tweet_cache.tweet)[index_no]
 
         # Look up the sauce
         try:
             if config.getboolean('SauceNao', 'download_files', fallback=False):
-                self.log.debug("Downloading image from Twitter")
+                self.log.debug(f"[{log_index}] Downloading image from Twitter")
                 fd, path = tempfile.mkstemp()
                 try:
                     with os.fdopen(fd, 'wb') as tmp:
@@ -278,43 +248,94 @@ class TwitterSauce:
                 finally:
                     os.remove(path)
             else:
-                self.log.debug("Performing remote URL lookup")
+                self.log.debug(f"[{log_index}] Performing remote URL lookup")
                 sauce = await self.sauce.from_url(media)
 
             if not sauce.results:
-                self._cached_results[url_hash] = None
-                return None
+                sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
+                return sauce_cache
         except ShortLimitReachedException:
-            self.log.warning("Short API limit reached, throttling for 30 seconds")
+            self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
             await asyncio.sleep(30.0)
-            return await self.get_sauce(media)
+            return await self.get_sauce(tweet_cache, index_no, log_index)
         except SauceNaoException as e:
-            self.log.error(f"SauceNao exception raised: {e}")
-            return None
+            self.log.error(f"[{log_index}] SauceNao exception raised: {e}")
+            sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, index_no=index_no, trigger=trigger)
+            return sauce_cache
 
-        self._cached_results[url_hash] = sauce[0]
-        return sauce[0]
+        sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
+        return sauce_cache
 
-    def send_reply(self, tweet, sauce: Optional[GenericSource], requested=True, blocked=False) -> None:
+        def get_closest_media(self, tweet, log_index: Optional[str] = None) -> Optional[Tuple[TweetCache, TweetCache, List[str]]]:
+        """
+        Attempt to get the closest media element associated with this tweet and handle any errors if they occur
+        Args:
+            tweet: tweepy.models.Status
+            log_index (Optional[str]): Index to use for system logs. Defaults to SYSTEM
+            
+        Returns:
+            Optional[List]
+        """
+        log_index = log_index or 'SYSTEM'
+
+        try:
+            original_cache, media_cache, media = self.twitter.get_closest_media(tweet)
+        except tweepy.error.TweepError as error:
+            # Error 136 means we are blocked
+            if error.api_code == 136:
+                # noinspection PyBroadException
+                try:
+                    api.update_status(
+                            f"@{tweet.author.screen_name} Sorry, it looks like the author of this post has blocked us. For more information, please refer to:\nhttps://github.com/FujiMakoto/twitter-saucenao/#blocked-by",
+                            in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True
+                    )
+                except Exception as error:
+                    self.log.exception(f"[{log_index}] An exception occurred while trying to inform a user that an account has blocked us")
+                raise TwSauceNoMediaException
+            # We attempted to process a tweet from a user that has restricted access to their account
+            elif error.api_code in [179, 385]:
+                self.log.info(f"[{log_index}] Skipping a tweet we don't have permission to view")
+                raise TwSauceNoMediaException
+            # Someone got impatient and deleted a tweet before we could get too it
+            elif error.api_code == 144:
+                self.log.info(f"[{log_index}] Skipping a tweet that no longer exists")
+                raise TwSauceNoMediaException
+            # Something unfamiliar happened, log an error for later review
+            else:
+                self.log.error(f"[{log_index}] Skipping due to unknown Twitter error: {error.api_code} - {error.reason}")
+                raise TwSauceNoMediaException
+
+        # Still here? Yay! We have something then.
+        return original_cache, media_cache, media
+
+    def send_reply(self, tweet_cache: TweetCache, media_cache: TweetCache, sauce_cache: TweetSauceCache, requested=True, blocked=False) -> None:
         """
         Return the source of the image
         Args:
-            tweet (): The tweet to reply to
-            sauce (Optional[GenericSource]): The sauce found (or None if nothing was found)
+            tweet_cache (TweetCache): The tweet to reply to
+            media_cache (TweetCache): The tweet containing media elements
+            sauce_cache (Optional[GenericSource]): The sauce found (or None if nothing was found)
             requested (bool): True if the lookup was requested, or False if this is a monitored user account
             blocked (bool): If True, the account posting this has blocked the SauceBot
 
         Returns:
             None
         """
+        tweet = tweet_cache.tweet
+        sauce = sauce_cache.sauce
+
         if sauce is None:
             if requested:
-                tweet_parser = TweetParser(tweet)
-                tweet_parser.find_closest_media()
-                google_url = f"https://www.google.com/searchbyimage?image_url={tweet_parser.media[0]}&safe=off"
+                media = TweetManager.extract_media(media_cache.tweet)
+                if not media:
+                    return
+
+                yandex_url  = f"https://yandex.com/images/search?url={media[sauce_cache.index_no]}&rpt=imageview"
+                tinyeye_url = f"https://www.tineye.com/search?url={media[sauce_cache.index_no]}"
+                google_url  = f"https://www.google.com/searchbyimage?image_url={media[sauce_cache.index_no]}&safe=off"
 
                 api.update_status(
-                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nYou might be able to find something on Google however!\n{google_url}",
+                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nTry checking one of these search engines!\n{yandex_url}\n{google_url}\n{tinyeye_url}",
                         in_reply_to_status_id=tweet.id
                 )
             return
@@ -324,7 +345,7 @@ class TwitterSauce:
         repr.maxstring = 32
 
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
-        if sauce.index != 'H-Misc':
+         if sauce.index not in ['H-Misc', 'E-Hentai']:
             title = repr.repr(sauce.title).strip("'")
         else:
             repr.maxstring = 128
@@ -401,6 +422,6 @@ class TwitterSauce:
         # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
         if blocked and twitter_sauce:
             self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
-            api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたのアートワークを盗み、私にあなたのクレジットを表示することをブロックしました。
-https://github.com/Satoshiii-DCS/twitter-saucefinder/blob/master/DMCA.md
+            api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたの絵を盗んで、私があなたを明記したらブロックされちゃいました
+https:// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 https://help.twitter.com/forms/dmca""", in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
