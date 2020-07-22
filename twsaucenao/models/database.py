@@ -85,6 +85,7 @@ class TweetSauceCache(db.Entity):
     sauce_header    = Optional(Json)
     sauce_data      = Optional(Json)
     sauce_class     = Optional(str, 255)
+    sauce_index     = Optional(str, 255)
     trigger         = Optional(str, 50)
     created_at      = Required(int, size=64, index=True)
 
@@ -173,6 +174,7 @@ class TweetSauceCache(db.Entity):
                 sauce_header=sauce.header,
                 sauce_data=sauce.data,
                 sauce_class=type(sauce).__name__,
+                sauce_index=sauce.index,
                 trigger=trigger,
                 created_at=int(time.time())
         )
