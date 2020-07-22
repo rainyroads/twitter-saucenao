@@ -1,3 +1,5 @@
-pysaucenao ~= 1.0.1
-tweepy
+pysaucenao ~= 1.1.0
+tweepy~=3.9.0
 pixivpy
+pony~=0.7.13
+aiohttp~=3.6.2
