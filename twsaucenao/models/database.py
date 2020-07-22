@@ -216,7 +216,7 @@ class TwitterBlocklist(db.Entity):
             TwitterBlocklist
         """
         # Make sure an entry for this user doesn't already exist
-        already_logged = TwitterBlocklist(account_id=user.id)
+        already_logged = TwitterBlocklist.get(account_id=user.id)
         if already_logged:
             return already_logged
 
