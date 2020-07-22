@@ -58,6 +58,7 @@ class TweetCache(db.Entity):
         if cache:
             log.warning(f'[SYSTEM] Overwriting cache entry for tweet {tweet.id} early')
             cache.delete()
+            commit()
 
         # noinspection PyProtectedMember
         cache = TweetCache(
@@ -126,6 +127,7 @@ class TweetSauceCache(db.Entity):
         if cache:
             log.warning(f'[SYSTEM] Overwriting sauce cache entry for tweet {tweet.tweet_id} early')
             cache.delete()
+            commit()
 
         # If there are no results, we log a cache entry anyways to prevent making additional queries
         def no_results():
