@@ -90,7 +90,7 @@ class TwitterSauce:
 
                 # Get the sauce!
                 sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
-                self.send_reply(original_cache, sauce_cache, blocked=media_cache.blocked)
+                self.send_reply(original_cache, media_cache, sauce_cache, blocked=media_cache.blocked)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
@@ -154,7 +154,7 @@ class TwitterSauce:
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[{account}] Failed to find sauce for tweet {tweet.id}")
 
-                    self.send_reply(original_cache, sauce_cache, False)
+                    self.send_reply(original_cache, media_cache, sauce_cache, False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[{account}] No sauce found for tweet {tweet.id}")
                     continue
@@ -214,7 +214,7 @@ class TwitterSauce:
                     sauce = sauce_cache.sauce
                     self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
-                    self.send_reply(original_cache, sauce_cache, False)
+                    self.send_reply(original_cache, media_cache, sauce_cache, False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
                     continue
@@ -308,11 +308,12 @@ class TwitterSauce:
         # Still here? Yay! We have something then.
         return original_cache, media_cache, media
 
-    def send_reply(self, tweet_cache: TweetCache, sauce_cache: TweetSauceCache, requested=True, blocked=False) -> None:
+    def send_reply(self, tweet_cache: TweetCache, media_cache: TweetCache, sauce_cache: TweetSauceCache, requested=True, blocked=False) -> None:
         """
         Return the source of the image
         Args:
-            tweet_cache (): The tweet to reply to
+            tweet_cache (TweetCache): The tweet to reply to
+            media_cache (TweetCache): The tweet containing media elements
             sauce_cache (Optional[GenericSource]): The sauce found (or None if nothing was found)
             requested (bool): True if the lookup was requested, or False if this is a monitored user account
             blocked (bool): If True, the account posting this has blocked the SauceBot
@@ -325,7 +326,7 @@ class TwitterSauce:
 
         if sauce is None:
             if requested:
-                media = TweetManager.extract_media(tweet)
+                media = TweetManager.extract_media(media_cache.tweet)
                 if not media:
                     return
 
