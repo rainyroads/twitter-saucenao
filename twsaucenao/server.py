@@ -330,10 +330,12 @@ class TwitterSauce:
                 if not media:
                     return
 
-                google_url = f"https://www.google.com/searchbyimage?image_url={media[sauce_cache.index_no]}&safe=off"
+                yandex_url  = f"https://yandex.com/images/search?url={media[sauce_cache.index_no]}&rpt=imageview"
+                tinyeye_url = f"https://www.tineye.com/search?url={media[sauce_cache.index_no]}"
+                google_url  = f"https://www.google.com/searchbyimage?image_url={media[sauce_cache.index_no]}&safe=off"
 
                 api.update_status(
-                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nYou might be able to find something on Google however!\n{google_url}",
+                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nTry checking one of these search engines!\n{yandex_url}\n{google_url}\n{tinyeye_url}",
                         in_reply_to_status_id=tweet.id
                 )
             return
