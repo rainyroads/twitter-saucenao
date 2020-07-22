@@ -6,7 +6,7 @@ import tweepy
 from twsaucenao import SAUCENAOPLS_TWITTER_ID
 from twsaucenao.api import api, readonly_api
 from twsaucenao.errors import TwSauceNoMediaException
-from twsaucenao.models.database import TweetCache
+from twsaucenao.models.database import TweetCache, TwitterBlocklist
 
 
 class TweetManager:
@@ -43,6 +43,9 @@ class TweetManager:
                 if readonly_api:
                     self.log.warning(f"User has blocked the main account; falling back to read-only API for media parsing on tweet {tweet_id}")
                     _tweet = readonly_api.get_status(tweet_id, tweet_mode='extended')
+
+                    # Add this account to our blocklist
+                    TwitterBlocklist.add(_tweet.author)
                 else:
                     self.log.warning(f"Skipping tweet {tweet_id} as we have been blocked by the authors account")
                     raise error

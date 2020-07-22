@@ -197,4 +197,37 @@ class TweetSauceCache(db.Entity):
         return sauce
 
 
+class TwitterBlocklist(db.Entity):
+    account_id      = PrimaryKey(int, size=64)
+    username        = Required(str, 100)
+    display_name    = Required(str, 100)
+    user_data       = Required(Json)
+    blocked_on      = Required(int, size=64)
+
+    @staticmethod
+    @db_session
+    def add(user) -> 'TwitterBlocklist':
+        """
+        Log accounts that have blocked the sauce bot
+        Args:
+            user: tweepy.models.User
+
+        Returns:
+            TwitterBlocklist
+        """
+        # Make sure an entry for this user doesn't already exist
+        already_logged = TwitterBlocklist(account_id=user.id)
+        if already_logged:
+            return already_logged
+
+        # noinspection PyProtectedMember
+        return TwitterBlocklist(
+                account_id=user.id,
+                username=user.screen_name,
+                display_name=user.name,
+                user_data=user._json,
+                blocked_on=int(time.time())
+        )
+
+
 db.generate_mapping(create_tables=True)
