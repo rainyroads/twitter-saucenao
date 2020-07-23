@@ -1,5 +1,4 @@
 import asyncio
-import hashlib
 import logging
 import os
 import reprlib
@@ -8,8 +7,8 @@ from typing import *
 
 import aiohttp
 import tweepy
-from pysaucenao import GenericSource, SauceNao, ShortLimitReachedException, SauceNaoException, VideoSource, PixivSource, \
-    MangaSource, BooruSource
+from pysaucenao import BooruSource, MangaSource, PixivSource, SauceNao, SauceNaoException, ShortLimitReachedException, \
+    VideoSource
 
 from twsaucenao.api import api
 from twsaucenao.config import config

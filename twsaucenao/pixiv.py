@@ -1,6 +1,7 @@
 import logging
 import re
 import typing
+
 from pixivpy3 import AppPixivAPI
 
 from twsaucenao.config import config
