@@ -7,7 +7,8 @@ from typing import *
 
 import aiohttp
 import tweepy
-from pysaucenao import BooruSource, MangaSource, PixivSource, SauceNao, SauceNaoException, ShortLimitReachedException, \
+from pysaucenao import BooruSource, DailyLimitReachedException, MangaSource, PixivSource, SauceNao, SauceNaoException, \
+    ShortLimitReachedException, \
     VideoSource
 
 from twsaucenao.api import api
@@ -262,6 +263,10 @@ class TwitterSauce:
         except ShortLimitReachedException:
             self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
             await asyncio.sleep(30.0)
+            return await self.get_sauce(tweet_cache, index_no, log_index)
+        except DailyLimitReachedException:
+            self.log.error(f"[{log_index}] Daily API limit reached, throttling for 15 minutes. Please consider upgrading your API key.")
+            await asyncio.sleep(900.0)
             return await self.get_sauce(tweet_cache, index_no, log_index)
         except SauceNaoException as e:
             self.log.error(f"[{log_index}] SauceNao exception raised: {e}")
