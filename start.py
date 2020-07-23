@@ -14,6 +14,7 @@ search_interval = float(config.get('Twitter', 'search_interval', fallback=60.0))
 twitter = TwitterSauce()
 
 
+# noinspection PyBroadException
 async def mentions() -> None:
     """
     Respond to any mentions requesting sauce lookups
@@ -25,11 +26,12 @@ async def mentions() -> None:
             # Mentions
             await twitter.check_mentions()
             await asyncio.sleep(mentioned_interval)
-        except:
+        except Exception:
             log.exception("An unknown error occurred while checking mentions")
             await asyncio.sleep(60.0)
 
 
+# noinspection PyBroadException
 async def monitored() -> None:
     """
     Query monitored accounts for sauce lookups
@@ -41,11 +43,12 @@ async def monitored() -> None:
             # Monitored accounts
             await twitter.check_monitored()
             await asyncio.sleep(monitored_interval)
-        except:
+        except Exception:
             log.exception("An unknown error occurred while checking monitored accounts")
             await asyncio.sleep(60.0)
 
 
+# noinspection PyBroadException
 async def search() -> None:
     """
     Perform a search query for our monitored key-phrase and respond to any applicable posts
@@ -57,11 +60,12 @@ async def search() -> None:
             # Search query
             await twitter.check_query()
             await asyncio.sleep(search_interval)
-        except:
+        except Exception:
             log.exception("An unknown error occurred while executing a search query")
             await asyncio.sleep(60.0)
 
 
+# noinspection PyBroadException
 async def cleanup() -> None:
     """
     Purge stale cache entries from the database and display some general analytics
@@ -75,7 +79,7 @@ async def cleanup() -> None:
             stale_count = TweetCache.purge()
             print(f"Purging {stale_count} stale cache entries from the database")
             await asyncio.sleep(900.0)
-        except:
+        except Exception:
             log.exception("An unknown error occurred while performing cleanup tasks")
             await asyncio.sleep(300.0)
 
