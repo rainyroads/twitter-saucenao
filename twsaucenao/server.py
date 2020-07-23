@@ -239,10 +239,16 @@ class TwitterSauce:
                 fd, path = tempfile.mkstemp()
                 try:
                     with os.fdopen(fd, 'wb') as tmp:
-                        async with aiohttp.ClientSession() as session:
-                            async with await session.get(media) as response:
-                                image = await response.read()
-                        tmp.write(image)
+                        async with aiohttp.ClientSession(raise_for_status=True) as session:
+                            try:
+                                async with await session.get(media) as response:
+                                    image = await response.read()
+                                    tmp.write(image)
+                            except aiohttp.ClientResponseError as error:
+                                self.log.warning(f"[{log_index}] Twitter returned a {error.status} error when downloading from tweet {tweet_cache.tweet_id}")
+                                sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, index_no=index_no, trigger=trigger)
+                                return sauce_cache
+
                         sauce = await self.sauce.from_file(path)
                 finally:
                     os.remove(path)
