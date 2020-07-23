@@ -203,6 +203,30 @@ class TweetSauceCache(db.Entity):
         )
         return cache
 
+    # noinspection PyTypeChecker
+    @staticmethod
+    @db_session
+    def sauce_count(cutoff: typing.Optional[int] = None, found_only: bool = True) -> int:
+        """
+        Return a count of how many sauce lookups we've performed
+        Args:
+            cutoff (typing.Optional[int]): An optional cutoff. When defined, only count results logged in the last
+                `cutoff` seconds.
+            found_only (bool): Only count sauce queries that actually returned results.
+
+        Returns:
+            int
+        """
+        now = int(time.time())
+        cutoff_ts = 0 if not cutoff else (now - cutoff)
+
+        if found_only:
+            sauce_count = count(s for s in TweetSauceCache if s.sauce_class and s.created_at >= cutoff_ts)
+        else:
+            sauce_count = count(s for s in TweetSauceCache if s.created_at >= cutoff_ts)
+
+        return sauce_count
+
     @property
     def sauce(self) -> typing.Optional[GenericSource]:
         """
