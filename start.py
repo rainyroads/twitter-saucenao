@@ -2,9 +2,9 @@ import asyncio
 import time
 
 from twsaucenao.config import config
+from twsaucenao.log import log
 from twsaucenao.models.database import TweetCache, TweetSauceCache
 from twsaucenao.server import TwitterSauce
-from twsaucenao.log import log
 
 # Get our polling intervals
 mentioned_interval = float(config.get('Twitter', 'mentioned_interval', fallback=15.0))
