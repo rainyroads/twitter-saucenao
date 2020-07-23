@@ -253,8 +253,8 @@ class TweetSauceCache(db.Entity):
 
 class TwitterBlocklist(db.Entity):
     account_id      = PrimaryKey(int, size=64)
-    username        = Required(str, 100)
-    display_name    = Required(str, 100)
+    username        = Required(str, 255)
+    display_name    = Required(str, 255)
     user_data       = Required(Json)
     blocked_on      = Required(int, size=64)
 
