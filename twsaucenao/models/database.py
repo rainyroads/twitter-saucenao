@@ -15,7 +15,7 @@ db = Database()
 
 if config.has_section('MySQL'):
     db.bind(provider='mysql', host=config.get('MySQL', 'hostname'), user=config.get('MySQL', 'username'),
-            passwd=config.get('MySQL', 'password'), db=config.get('MySQL', 'database'))
+            passwd=config.get('MySQL', 'password'), db=config.get('MySQL', 'database'), charset='utf8mb4')
 else:
     db.bind(provider='sqlite', filename='database.sqlite', create_db=True)
 
