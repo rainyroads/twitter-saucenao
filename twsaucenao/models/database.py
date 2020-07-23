@@ -70,6 +70,27 @@ class TweetCache(db.Entity):
         )
         return cache
 
+    # noinspection PyTypeChecker
+    @staticmethod
+    @db_session
+    def purge(cutoff=86400):
+        """
+        Purge old entries from the tweet cache
+        Args:
+            cutoff (int): Purge cache entries older than `cutoff` seconds. (Default is 1-day)
+
+        Returns:
+            int: The number of cache entries that have been purged (for logging)
+        """
+        cutoff_ts = int(time.time()) - cutoff
+        stale_count = count(c for c in TweetCache if c.created_at <= cutoff_ts)
+
+        # No need to perform a delete query if there's nothing to delete
+        if stale_count:
+            delete(c for c in TweetCache if c.created_at <= cutoff_ts)
+
+        return stale_count
+
     @property
     def tweet(self):
         """

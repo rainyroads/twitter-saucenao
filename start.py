@@ -1,6 +1,8 @@
 import asyncio
+import time
 
 from twsaucenao.config import config
+from twsaucenao.models.database import TweetCache
 from twsaucenao.server import TwitterSauce
 from twsaucenao.log import log
 
@@ -60,6 +62,24 @@ async def search() -> None:
             await asyncio.sleep(60.0)
 
 
+async def cleanup() -> None:
+    """
+    Purge stale cache entries from the database and display some general analytics
+    Returns:
+        None
+    """
+    now = int(time.time())
+
+    while True:
+        try:
+            stale_count = TweetCache.purge()
+            print(f"Purging {stale_count} stale cache entries from the database")
+            await asyncio.sleep(900.0)
+        except:
+            log.exception("An unknown error occurred while performing cleanup tasks")
+            await asyncio.sleep(300.0)
+
+
 async def main() -> None:
     """
     Initialize / gather the methods to run in concurrent loops
@@ -72,6 +92,7 @@ async def main() -> None:
 
     tasks.append(monitored())
     tasks.append(search())
+    tasks.append(cleanup())
 
     await asyncio.gather(*tasks)
 
