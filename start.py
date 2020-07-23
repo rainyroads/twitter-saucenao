@@ -79,8 +79,7 @@ async def cleanup() -> None:
             print(f"\nPurging {stale_count:,} stale cache entries from the database")
 
             # Sauce analytics
-            now = int(time.time())
-            sauce_count = TweetSauceCache.sauce_count(now - 900)
+            sauce_count = TweetSauceCache.sauce_count(900)
             print(f"We've processed {sauce_count:,} new sauce queries!")
 
             await asyncio.sleep(900.0)
