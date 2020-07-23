@@ -82,3 +82,38 @@ If you want to monitor another account on Twitter, please be sure someone else i
 
 # Closing remarks
 That’s about it! I hope you have found this project useful. All the major credit really goes to the SauceNao website and service, which allows the bot to operate.
+
+### Supporters
+
+Thank you so much to all of our supporters on [Patreon](https://www.patreon.com/saucebot)! It means a lot to me that you believe in this project enough to help fund it.
+
+#### Waifus / Husbandos ($15+)
+
+* Spina97
+* Nyaaa
+* Nyabe
+* TotallyArk
+
+#### Main Characters ($6)
+
+* James P Harris
+* Karter
+* Part
+
+#### Supporting Characters ($3)
+
+* Caleb Dron
+* Edward Simmons
+* Izu
+* JL
+* Josiah Wolf
+* Justin Whang
+* MetalMallard
+* Migi
+* NeonTaeh
+* Russel
+* SUZUSHIIRO
+* Sergio Juarez
+* Tamschi
+* Ulysses Duckler
+* jclc
