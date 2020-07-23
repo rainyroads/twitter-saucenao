@@ -35,7 +35,7 @@ class TweetCache(db.Entity):
 
     @staticmethod
     @db_session
-    def fetch(tweet_id: int) -> 'TweetCache':
+    def fetch(tweet_id: int) -> typing.Optional['TweetCache']:
         """
         Attempt to retrieve a tweet from our local cache
         Args:
@@ -113,19 +113,28 @@ class TweetSauceCache(db.Entity):
 
     @staticmethod
     @db_session
-    def fetch(tweet_id: int, index_no: int = 0) -> 'TweetSauceCache':
+    def fetch(tweet_id: int, index_no: int = 0, cutoff: int = 86400) -> typing.Optional['TweetSauceCache']:
         """
         Attempt to load a cached saucenao lookup
         Args:
             tweet_id(int): Tweet ID to look up
             index_no (int): The media indice for tweets with multiple media uploads
+            cutoff (int): Only retrieve cache entries up to `cutoff` seconds old. (Default is 1-day)
 
         Returns:
             typing.Optional[TweetSauceCache]
         """
+        now = int(time.time())
+        cutoff_ts = 0 if not cutoff else (now - cutoff)
+
         sauce = TweetSauceCache.get(tweet_id=tweet_id, index_no=index_no)
         if sauce:
             log.debug(f'[SYSTEM] Sauce cache hit on index {index_no} for tweet {tweet_id}')
+
+            if sauce.created_at < cutoff_ts:
+                log.info(f'[SYSTEM] Sauce cache query on index {index_no} for tweet {tweet_id} has expired')
+                return None
+
         return sauce
 
     @staticmethod
@@ -146,7 +155,7 @@ class TweetSauceCache(db.Entity):
         # Delete any existing cache entry. This is just for safety; it shouldn't actually be triggered.
         cache = TweetSauceCache.get(tweet_id=tweet.tweet_id, index_no=index_no)
         if cache:
-            log.warning(f'[SYSTEM] Overwriting sauce cache entry for tweet {tweet.tweet_id} early')
+            log.info(f'[SYSTEM] Overwriting sauce cache entry for tweet {tweet.tweet_id}')
             cache.delete()
             commit()
 
