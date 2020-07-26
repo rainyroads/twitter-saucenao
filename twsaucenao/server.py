@@ -254,7 +254,7 @@ class TwitterSauce:
 
             if _sauce.results and _sauce.results[0].index_id in [21, 22]:
                 _tracemoe_sauce = await self.tracemoe.search(path, is_url=is_url)
-                _tracemoe_preview = await self.tracemoe.video_preview(_tracemoe_sauce)
+                _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
                 _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
                 return _tracemoe_sauce['docs'][0]
 
