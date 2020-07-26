@@ -466,7 +466,7 @@ class TwitterSauce:
             if tracemoe_sauce:
                 tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
                 comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True,
-                                            media_ids=[tw_response['media_id']])
+                                            media_ids=[tw_response['media_id']], possibly_sensitive=tracemoe_sauce['is_adult'])
             else:
                 comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
         except tweepy.TweepError as error:
