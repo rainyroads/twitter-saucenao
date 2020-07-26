@@ -173,26 +173,9 @@ class TweetSauceCache(db.Entity):
         if not sauce_results or not sauce_results.results:
             return no_results()
 
-        # Filter the results, prioritizing anime first, then Pixiv, then anything else
-        sauce = None
-
-        # Do we have an anime?
+        # Get the first result and make sure it meets our minimum similarity requirement
         similarity_cutoff = int(config.getfloat('Twitter', f"min_similarity_{trigger}", fallback=50.0))
-        for result in sauce_results.results:
-            if (result.similarity >= max(similarity_cutoff, 75)) and isinstance(result, VideoSource):
-                sauce = result
-                break
-
-        # No? Any relevant Pixiv entries?
-        if not sauce:
-            for result in sauce_results.results:
-                if (result.similarity >= max(similarity_cutoff, 75)) and isinstance(result, PixivSource):
-                    sauce = result
-                    break
-
-        # Still nothing? Just pick the best match then
-        if not sauce:
-            sauce = sauce_results.results[0]
+        sauce = sauce_results.results[0]
 
         # Finally, make sure the sauce result actually meets our minimum similarity requirements
         if (sauce.similarity < similarity_cutoff):

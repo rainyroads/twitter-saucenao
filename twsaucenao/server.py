@@ -33,7 +33,8 @@ class TwitterSauce:
         self.minsim_searching = float(config.get('SauceNao', 'min_similarity_searching', fallback=70.0))
         self.sauce = SauceNao(
                 api_key=config.get('SauceNao', 'api_key', fallback=None),
-                min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching)
+                min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching),
+                priority=[21, 22, 5]
         )
 
         # Trace.moe
