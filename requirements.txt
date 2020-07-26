@@ -3,3 +3,4 @@ tweepy~=3.9.0
 pixivpy
 pony~=0.7.13
 aiohttp~=3.6.2
+tracemoe

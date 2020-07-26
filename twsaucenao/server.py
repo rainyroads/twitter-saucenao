@@ -10,6 +10,7 @@ import tweepy
 from pysaucenao import BooruSource, DailyLimitReachedException, MangaSource, PixivSource, SauceNao, SauceNaoException, \
     ShortLimitReachedException, \
     VideoSource
+from tracemoe import ATraceMoe
 
 from twsaucenao.api import api
 from twsaucenao.config import config
@@ -34,6 +35,11 @@ class TwitterSauce:
                 api_key=config.get('SauceNao', 'api_key', fallback=None),
                 min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching)
         )
+
+        # Trace.moe
+        self.tracemoe = None  # type: Optional[ATraceMoe]
+        if config.getboolean('TraceMoe', 'enabled', fallback=False):
+            self.tracemoe = ATraceMoe(config.get('TraceMoe', 'token', fallback=None))
 
         # Pixiv
         self.pixiv = Pixiv()
