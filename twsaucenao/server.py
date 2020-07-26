@@ -47,6 +47,7 @@ class TwitterSauce:
             self.tracemoe = ATraceMoe(config.get('TraceMoe', 'token', fallback=None))
 
         self._anime_link = config.get('TraceMoe', 'source_link', fallback='anidb').lower()
+        self._nsfw_previews = config.getboolean('TraceMoe', 'nsfw_previews', fallback=False)
 
         # Pixiv
         self.pixiv = Pixiv()
@@ -463,7 +464,7 @@ class TwitterSauce:
             reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
 
         try:
-            if tracemoe_sauce:
+            if tracemoe_sauce and (not tracemoe_sauce['is_adult'] or self._nsfw_previews):
                 tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
                 comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True,
                                             media_ids=[tw_response['media_id']], possibly_sensitive=tracemoe_sauce['is_adult'])
