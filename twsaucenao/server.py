@@ -42,6 +42,8 @@ class TwitterSauce:
         if config.getboolean('TraceMoe', 'enabled', fallback=False):
             self.tracemoe = ATraceMoe(config.get('TraceMoe', 'token', fallback=None))
 
+        self._anime_link = config.get('TraceMoe', 'source_link', fallback='anidb').lower()
+
         # Pixiv
         self.pixiv = Pixiv()
 
@@ -96,8 +98,8 @@ class TwitterSauce:
                 original_cache, media_cache, media = self.get_closest_media(tweet, self.my.screen_name)
 
                 # Get the sauce!
-                sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
-                self.send_reply(original_cache, media_cache, sauce_cache, blocked=media_cache.blocked)
+                sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=self.my.screen_name)
+                self.send_reply(original_cache, media_cache=media_cache, sauce_cache=sauce_cache, blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
@@ -155,7 +157,7 @@ class TwitterSauce:
                     self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]}")
 
                     # Get the sauce
-                    sauce_cache = await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED)
+                    sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED)
                     sauce = sauce_cache.sauce
 
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
@@ -217,7 +219,7 @@ class TwitterSauce:
                     self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]}")
 
                     # Get the sauce
-                    sauce_cache = await self.get_sauce(media_cache, log_index='SEARCH', trigger=TRIGGER_SEARCH)
+                    sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index='SEARCH', trigger=TRIGGER_SEARCH)
                     sauce = sauce_cache.sauce
                     self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
@@ -227,7 +229,7 @@ class TwitterSauce:
                     continue
 
     async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: Optional[str] = None,
-                        trigger: str = TRIGGER_MENTION) -> TweetSauceCache:
+                        trigger: str = TRIGGER_MENTION) -> Tuple[TweetSauceCache, Optional[bytes]]:
         """
         Get the sauce of a media tweet
         """
@@ -236,9 +238,22 @@ class TwitterSauce:
         # Have we cached the sauce already?
         cache = TweetSauceCache.fetch(tweet_cache.tweet_id, index_no)
         if cache:
-            return cache
+            return cache, None
 
         media = TweetManager.extract_media(tweet_cache.tweet)[index_no]
+
+        # Execute a Tracemoe search query for anime results
+        async def tracemoe_search(_sauce, is_url: bool) -> Optional[dict]:
+            if not self.tracemoe:
+                return None
+
+            if _sauce.results and _sauce.results[0].index_id in [21, 22]:
+                _tracemoe_sauce = await self.tracemoe.search(path, is_url=is_url)
+                _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
+                _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
+                return _tracemoe_sauce['docs'][0]
+
+            return None
 
         # Look up the sauce
         try:
@@ -263,15 +278,17 @@ class TwitterSauce:
                                 return sauce_cache
 
                         sauce = await self.sauce.from_file(path)
+                        tracemoe_sauce = await tracemoe_search(sauce, is_url=False)
                 finally:
                     os.remove(path)
             else:
                 self.log.debug(f"[{log_index}] Performing remote URL lookup")
                 sauce = await self.sauce.from_url(media)
+                tracemoe_sauce = await tracemoe_search(sauce, is_url=True)
 
             if not sauce.results:
                 sauce_cache = TweetSauceCache.set(tweet_cache, sauce, index_no, trigger=trigger)
-                return sauce_cache
+                return sauce_cache, None
         except ShortLimitReachedException:
             self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
             await asyncio.sleep(30.0)
@@ -283,10 +300,10 @@ class TwitterSauce:
         except SauceNaoException as e:
             self.log.error(f"[{log_index}] SauceNao exception raised: {e}")
             sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no, trigger=trigger)
-            return sauce_cache
+            return sauce_cache, None
 
         sauce_cache = TweetSauceCache.set(tweet_cache, sauce, index_no, trigger=trigger)
-        return sauce_cache
+        return sauce_cache, tracemoe_sauce
 
     def get_closest_media(self, tweet, log_index: Optional[str] = None) -> Optional[Tuple[TweetCache, TweetCache, List[str]]]:
         """
@@ -330,13 +347,15 @@ class TwitterSauce:
         # Still here? Yay! We have something then.
         return original_cache, media_cache, media
 
-    def send_reply(self, tweet_cache: TweetCache, media_cache: TweetCache, sauce_cache: TweetSauceCache, requested=True, blocked=False) -> None:
+    def send_reply(self, tweet_cache: TweetCache, media_cache: TweetCache, sauce_cache: TweetSauceCache,
+                   tracemoe_sauce: Optional[dict] = None, requested: bool = True, blocked: bool = False) -> None:
         """
         Return the source of the image
         Args:
             tweet_cache (TweetCache): The tweet to reply to
             media_cache (TweetCache): The tweet containing media elements
             sauce_cache (Optional[GenericSource]): The sauce found (or None if nothing was found)
+            tracemoe_sauce (Optional[dict]): Tracemoe sauce query, if enabled
             requested (bool): True if the lookup was requested, or False if this is a monitored user account
             blocked (bool): If True, the account posting this has blocked the SauceBot
 
@@ -365,6 +384,14 @@ class TwitterSauce:
         # For limiting the length of the title/author
         repr = reprlib.Repr()
         repr.maxstring = 32
+
+        # Consider overriding the sauce URL for anime results
+        if tracemoe_sauce and self._anime_link != 'anidb':
+            if self._anime_link == 'anilist':
+                sauce.url = f"https://anilist.co/anime/{tracemoe_sauce['anilist_id']}/"
+
+            if self._anime_link == 'myanimelist':
+                sauce.url = f"https://myanimelist.net/anime/{tracemoe_sauce['mal_id']}/"
 
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
         if sauce.index not in ['H-Misc', 'E-Hentai']:
