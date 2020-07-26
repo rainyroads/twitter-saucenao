@@ -139,8 +139,8 @@ class TweetSauceCache(db.Entity):
 
     @staticmethod
     @db_session
-    def filter_and_set(tweet: TweetCache, sauce_results: typing.Optional[SauceNaoResults] = None, index_no: int = 0,
-                       trigger: str = TRIGGER_MENTION) -> 'TweetSauceCache':
+    def set(tweet: TweetCache, sauce_results: typing.Optional[SauceNaoResults] = None, index_no: int = 0,
+            trigger: str = TRIGGER_MENTION) -> 'TweetSauceCache':
         """
         Cache a SauceNao query
         Args:
