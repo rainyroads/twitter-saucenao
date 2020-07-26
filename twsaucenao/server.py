@@ -253,12 +253,12 @@ class TwitterSauce:
                                     tmp.write(image)
                                     if not image:
                                         self.log.error(f"[{log_index}] Empty file received from Twitter")
-                                        sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, index_no=index_no,
-                                                                                     trigger=trigger)
+                                        sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no,
+                                                                          trigger=trigger)
                                         return sauce_cache
                             except aiohttp.ClientResponseError as error:
                                 self.log.warning(f"[{log_index}] Twitter returned a {error.status} error when downloading from tweet {tweet_cache.tweet_id}")
-                                sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, index_no=index_no, trigger=trigger)
+                                sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no, trigger=trigger)
                                 return sauce_cache
 
                         sauce = await self.sauce.from_file(path)
@@ -269,7 +269,7 @@ class TwitterSauce:
                 sauce = await self.sauce.from_url(media)
 
             if not sauce.results:
-                sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
+                sauce_cache = TweetSauceCache.set(tweet_cache, sauce, index_no, trigger=trigger)
                 return sauce_cache
         except ShortLimitReachedException:
             self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
@@ -281,10 +281,10 @@ class TwitterSauce:
             return await self.get_sauce(tweet_cache, index_no, log_index)
         except SauceNaoException as e:
             self.log.error(f"[{log_index}] SauceNao exception raised: {e}")
-            sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, index_no=index_no, trigger=trigger)
+            sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no, trigger=trigger)
             return sauce_cache
 
-        sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, sauce, index_no, trigger=trigger)
+        sauce_cache = TweetSauceCache.set(tweet_cache, sauce, index_no, trigger=trigger)
         return sauce_cache
 
     def get_closest_media(self, tweet, log_index: Optional[str] = None) -> Optional[Tuple[TweetCache, TweetCache, List[str]]]:
