@@ -253,7 +253,12 @@ class TwitterSauce:
                 return None
 
             if _sauce.results and _sauce.results[0].index_id in [21, 22]:
-                _tracemoe_sauce = await self.tracemoe.search(path, is_url=is_url)
+                # noinspection PyBroadException
+                try:
+                    _tracemoe_sauce = await self.tracemoe.search(path, is_url=is_url)
+                except Exception:
+                    self.log.warning(f"[{log_index}] Tracemoe returned an exception, aborting search query")
+                    return None
                 if not _tracemoe_sauce.get('docs') or _tracemoe_sauce['docs'][0]['similarity'] < 0.85:
                     return None
 
