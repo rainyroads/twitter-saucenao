@@ -4,3 +4,4 @@ pixivpy
 pony~=0.7.13
 aiohttp~=3.6.2
 tracemoe
+twython~=3.8.2

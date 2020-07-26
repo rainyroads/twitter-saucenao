@@ -1,4 +1,5 @@
 import asyncio
+import io
 import logging
 import os
 import reprlib
@@ -11,6 +12,7 @@ from pysaucenao import BooruSource, DailyLimitReachedException, MangaSource, Pix
     ShortLimitReachedException, \
     VideoSource
 from tracemoe import ATraceMoe
+from twython import Twython
 
 from twsaucenao.api import api
 from twsaucenao.config import config
@@ -26,6 +28,8 @@ class TwitterSauce:
 
         # Tweet Cache Manager
         self.twitter = TweetManager()
+        self.twython = Twython(config.get('Twitter', 'consumer_key'), config.get('Twitter', 'consumer_secret'),
+                               config.get('Twitter', 'access_token'), config.get('Twitter', 'access_secret'))
 
         # SauceNao
         self.minsim_mentioned = float(config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0))
@@ -249,7 +253,7 @@ class TwitterSauce:
 
             if _sauce.results and _sauce.results[0].index_id in [21, 22]:
                 _tracemoe_sauce = await self.tracemoe.search(path, is_url=is_url)
-                _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
+                _tracemoe_preview = await self.tracemoe.video_preview(_tracemoe_sauce)
                 _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
                 return _tracemoe_sauce['docs'][0]
 
@@ -459,7 +463,12 @@ class TwitterSauce:
             reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
 
         try:
-            comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
+            if tracemoe_sauce:
+                tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
+                comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True,
+                                            media_ids=[tw_response['media_id']])
+            else:
+                comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
         except tweepy.TweepError as error:
             if error.api_code == 186 and not requested:
                 self.log.info("Post is too long; scrubbing bot instructions from message")
