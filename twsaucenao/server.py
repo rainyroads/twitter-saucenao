@@ -245,6 +245,11 @@ class TwitterSauce:
                                 async with await session.get(media) as response:
                                     image = await response.read()
                                     tmp.write(image)
+                                    if not image:
+                                        self.log.error(f"[{log_index}] Empty file received from Twitter")
+                                        sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, index_no=index_no,
+                                                                                     trigger=trigger)
+                                        return sauce_cache
                             except aiohttp.ClientResponseError as error:
                                 self.log.warning(f"[{log_index}] Twitter returned a {error.status} error when downloading from tweet {tweet_cache.tweet_id}")
                                 sauce_cache = TweetSauceCache.filter_and_set(tweet_cache, index_no=index_no, trigger=trigger)
