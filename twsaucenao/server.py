@@ -104,7 +104,8 @@ class TwitterSauce:
 
                 # Get the sauce!
                 sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=self.my.screen_name)
-                self.send_reply(original_cache, media_cache=media_cache, sauce_cache=sauce_cache, blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
+                self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
+                                blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
@@ -168,7 +169,8 @@ class TwitterSauce:
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[{account}] Failed to find sauce for tweet {tweet.id}")
 
-                    self.send_reply(original_cache, media_cache, sauce_cache, False)
+                    self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
+                                    requested=False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[{account}] No sauce found for tweet {tweet.id}")
                     continue
@@ -228,7 +230,8 @@ class TwitterSauce:
                     sauce = sauce_cache.sauce
                     self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
-                    self.send_reply(original_cache, media_cache, sauce_cache, False)
+                    self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
+                                    requested=False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
                     continue
