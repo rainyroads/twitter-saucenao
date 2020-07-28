@@ -262,8 +262,16 @@ class TwitterSauce:
                 except Exception:
                     self.log.warning(f"[{log_index}] Tracemoe returned an exception, aborting search query")
                     return None
-                if not _tracemoe_sauce.get('docs') or _tracemoe_sauce['docs'][0]['similarity'] < 0.85:
+                if not _tracemoe_sauce.get('docs'):
                     return None
+
+                # Check for an exactly title match first, then fallback to a similarity check.
+                # Obviously, this is not perfect. Titles don't always match, but sometimes tracemoe returns an accurate
+                # result with a lower similarity, so we just.. try and guess the best we can for now.
+                if _tracemoe_sauce['docs'][0]['similarity'] < 0.85:
+                    if _tracemoe_sauce['docs'][0]['title_english'].lower() != sauce.results[0].title.lower():
+                        if _tracemoe_sauce['docs'][0]['title_romanji'].lower() != sauce.results[0].title.lower():
+                            return None
 
                 _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
                 _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
