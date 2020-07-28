@@ -35,6 +35,7 @@ class TwitterSauce:
         self.minsim_mentioned = float(config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0))
         self.minsim_monitored = float(config.get('SauceNao', 'min_similarity_monitored', fallback=65.0))
         self.minsim_searching = float(config.get('SauceNao', 'min_similarity_searching', fallback=70.0))
+        self.persistent = config.getboolean('Twitter', 'enable_persistence', fallback=False)
         self.sauce = SauceNao(
                 api_key=config.get('SauceNao', 'api_key', fallback=None),
                 min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching),
@@ -104,6 +105,11 @@ class TwitterSauce:
 
                 # Get the sauce!
                 sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=self.my.screen_name)
+                if not sauce_cache.sauce and len(media) > 1 and self.persistent:
+                    sauce_cache, tracemoe_sauce = \
+                        await self.get_sauce(media_cache, log_index=self.my.screen_name,
+                                             trigger=TRIGGER_MONITORED, index_no=len(media) - 1)
+
                 self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
                                 blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
             except TwSauceNoMediaException:
@@ -165,6 +171,12 @@ class TwitterSauce:
                     # Get the sauce
                     sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED)
                     sauce = sauce_cache.sauce
+
+                    if not sauce and len(media) > 1 and self.persistent:
+                        sauce_cache, tracemoe_sauce = \
+                            await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED,
+                                                 index_no=len(media) - 1)
+                        sauce = sauce_cache.sauce
 
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[{account}] Failed to find sauce for tweet {tweet.id}")
@@ -228,8 +240,15 @@ class TwitterSauce:
                     # Get the sauce
                     sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index='SEARCH', trigger=TRIGGER_SEARCH)
                     sauce = sauce_cache.sauce
+                    if not sauce and len(media) > 1 and self.persistent:
+                        sauce_cache, tracemoe_sauce = \
+                            await self.get_sauce(media_cache, log_index='SEARCH', trigger=TRIGGER_MONITORED,
+                                                 index_no=len(media) - 1)
+                        sauce = sauce_cache.sauce
+
                     self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
+
                     self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
                                     requested=False)
                 except TwSauceNoMediaException:
