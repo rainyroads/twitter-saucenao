@@ -463,7 +463,7 @@ class TwitterSauce:
             if sauce.episode:
                 reply += f"\n𝗘𝗽𝗶𝘀𝗼𝗱𝗲: {sauce.episode}"
             if sauce.timestamp:
-                reply += f"( ⏱️ {sauce.timestamp} )"
+                reply += f" ( ⏱️ {sauce.timestamp} )"
 
         # Add the chapter for manga sources
         if isinstance(sauce, MangaSource):
