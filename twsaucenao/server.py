@@ -429,13 +429,13 @@ class TwitterSauce:
             title = repr.repr(sauce.title).strip("'")
 
         # Format the similarity string
-        similarity = f'𝗔𝗰𝗰𝘂𝗿𝗮𝗰𝘆: {sauce.similarity}% ('
+        similarity = f'𝗔𝗰𝗰𝘂𝗿𝗮𝗰𝘆: {sauce.similarity}% ( '
         if sauce.similarity >= 85.0:
-            similarity = similarity + '🔵High )'
+            similarity = similarity + '🔵 High )'
         elif sauce.similarity >= 70.0:
-            similarity = similarity + '🟡Medium )'
+            similarity = similarity + '🟡 Medium )'
         else:
-            similarity = similarity + '🟠Low )'
+            similarity = similarity + '🟠 Low )'
 
         if requested:
             reply = f"@{tweet.author.screen_name} I found this in the {sauce.index} database!\n"
@@ -463,7 +463,7 @@ class TwitterSauce:
             if sauce.episode:
                 reply += f"\n𝗘𝗽𝗶𝘀𝗼𝗱𝗲: {sauce.episode}"
             if sauce.timestamp:
-                reply += f"(⏱️{sauce.timestamp})"
+                reply += f"( ⏱️ {sauce.timestamp})"
 
         # Add the chapter for manga sources
         if isinstance(sauce, MangaSource):
