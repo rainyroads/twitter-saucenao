@@ -524,8 +524,13 @@ class TwitterSauce:
                 raise error
 
         # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
-        if blocked and twitter_sauce:
-            self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
-            api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたの絵を盗んで、私があなたを明記したらブロックされちゃいました
-https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
-https://help.twitter.com/forms/dmca""", in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
+        if blocked:
+            if twitter_sauce:
+                self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
+                api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたの絵を盗んで、私があなたを明記したらブロックされちゃいました
+    https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
+    https://help.twitter.com/forms/dmca""", in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
+            else:
+                api.update_status(f"This account has blocked {self.my.name}. For more information, please refer to:\n"
+                                  "https://github.com/FujiMakoto/twitter-saucenao#art-thieves-saucebot-has-been-blocked-by",
+                                  in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
