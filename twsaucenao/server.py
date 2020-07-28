@@ -401,13 +401,17 @@ class TwitterSauce:
         repr = reprlib.Repr()
         repr.maxstring = 32
 
-        # Consider overriding the sauce URL for anime results
-        if tracemoe_sauce and self._anime_link != 'anidb':
-            if self._anime_link == 'anilist':
-                sauce.url = f"https://anilist.co/anime/{tracemoe_sauce['anilist_id']}/"
+        # Add additional sauce URL's from trace.moe if available
+        sauce_urls = []
+        if tracemoe_sauce:
+            if self._anime_link in ['anilist', 'animal', 'all']:
+                sauce_urls.append(f"https://anilist.co/anime/{tracemoe_sauce['anilist_id']}/")
 
-            if self._anime_link == 'myanimelist':
-                sauce.url = f"https://myanimelist.net/anime/{tracemoe_sauce['mal_id']}/"
+            if self._anime_link in ['myanimelist', 'animal', 'all'] and tracemoe_sauce.get('mal_id'):
+                sauce_urls.append(f"https://myanimelist.net/anime/{tracemoe_sauce['mal_id']}/")
+
+            if self._anime_link in ['anidb', 'all']:
+                sauce_urls.append(sauce.url)
 
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
         if sauce.index not in ['H-Misc', 'E-Hentai']:
@@ -462,7 +466,9 @@ class TwitterSauce:
         reply += f"\n{similarity}"
 
         # Source URL's are not available in some indexes
-        if sauce.source_url:
+        if sauce_urls:
+            reply += "\n".join(sauce_urls)
+        elif sauce.source_url:
             reply += f"\n{sauce.source_url}"
 
         # Some Booru posts have bad source links cited, so we should always provide a Booru link with the source URL
