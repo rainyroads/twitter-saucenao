@@ -24,11 +24,13 @@ https://twitter.com/_kairy_draws_/status/1276653871448961028
 Here is a list of Twitter accounts that have blocked the official @saucenaopls bot for crediting artwork they've reposted.
 
 * @AnimeHentaiFans (Blocked 07/08/2020) (NSFW)
+* @LewdRealm (Re-blocked 07/28/2020) (NSFW)
+* @WaifuSupply (Re-blocked 07/28/2020)
 * @lfredohentai (Blocked 07/21/2020) (NSFW)
-* ~~@WaifuCult (Blocked 06/29/2020)~~ Unblocked and account has started crediting artists
 * @PrincessKeriana (Blocked 07/08/2020) (NSFW)
 * @Yumi69x2 (Blocked 06/29/2020) (NSFW)
 * @love_image__H (Blocked 06/30/2020) (NSFW)
+* @Tomo_Yamanobe_ (Blocked 07/28/2020) (NSFW)
 * @DreaMGGAMING (Blocked 07/03/2020)
 * @iJaIter (Blocked 06/30/2020)
 
