@@ -1,5 +1,7 @@
-pysaucenao ~= 1.1.1
+pysaucenao ~= 1.2.2
 tweepy~=3.9.0
 pixivpy
 pony~=0.7.13
 aiohttp~=3.6.2
+tracemoe
+twython~=3.8.2
