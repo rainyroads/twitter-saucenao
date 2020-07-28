@@ -475,9 +475,10 @@ class TwitterSauce:
 
         # Source URL's are not available in some indexes
         if sauce_urls:
+            reply += "\n\n"
             reply += "\n".join(sauce_urls)
         elif sauce.source_url:
-            reply += f"\n{sauce.source_url}"
+            reply += f"\n\n{sauce.source_url}"
 
         # Some Booru posts have bad source links cited, so we should always provide a Booru link with the source URL
         if isinstance(sauce, BooruSource) and sauce.source_url != sauce.url:
