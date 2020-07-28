@@ -429,13 +429,13 @@ class TwitterSauce:
             title = repr.repr(sauce.title).strip("'")
 
         # Format the similarity string
-        similarity = f'Similarity: {sauce.similarity}% ( '
+        similarity = f'𝗔𝗰𝗰𝘂𝗿𝗮𝗰𝘆: {sauce.similarity}% ('
         if sauce.similarity >= 85.0:
-            similarity = similarity + '🟦 High )'
+            similarity = similarity + '🔵High )'
         elif sauce.similarity >= 70.0:
-            similarity = similarity + '🟨 Medium )'
+            similarity = similarity + '🟡Medium )'
         else:
-            similarity = similarity + '🟥 Low )'
+            similarity = similarity + '🟠Low )'
 
         if requested:
             reply = f"@{tweet.author.screen_name} I found this in the {sauce.index} database!\n"
@@ -447,28 +447,28 @@ class TwitterSauce:
         if isinstance(sauce, PixivSource):
             twitter_sauce = self.pixiv.get_author_twitter(sauce.data['member_id'])
             if twitter_sauce:
-                reply += f"\nArtists Twitter: {twitter_sauce}"
+                reply += f"\n𝗔𝗿𝘁𝗶𝘀𝘁𝘀 𝗧𝘄𝗶𝘁𝘁𝗲𝗿: {twitter_sauce}"
 
         # Print the author name if available
         if sauce.author_name:
             author = repr.repr(sauce.author_name).strip("'")
-            reply += f"\nAuthor: {author}"
+            reply += f"\n𝗔𝘂𝘁𝗵𝗼𝗿: {author}"
 
         # Omit the title for Pixiv results since it's usually always non-romanized Japanese and not very helpful
         if not isinstance(sauce, PixivSource):
-            reply += f"\nTitle: {title}"
+            reply += f"\n𝗧𝗶𝘁𝗹𝗲: {title}"
 
         # Add the episode number and timestamp for video sources
         if isinstance(sauce, VideoSource):
             if sauce.episode:
-                reply += f"\nEpisode: {sauce.episode}"
+                reply += f"\n𝗘𝗽𝗶𝘀𝗼𝗱𝗲: {sauce.episode}"
             if sauce.timestamp:
-                reply += f"\nTimestamp: {sauce.timestamp}"
+                reply += f"(⏱️{sauce.timestamp})"
 
         # Add the chapter for manga sources
         if isinstance(sauce, MangaSource):
             if sauce.chapter:
-                reply += f"\nChapter: {sauce.chapter}"
+                reply += f"\n𝗖𝗵𝗮𝗽𝘁𝗲𝗿: {sauce.chapter}"
 
         # Display our confidence rating
         reply += f"\n{similarity}"
