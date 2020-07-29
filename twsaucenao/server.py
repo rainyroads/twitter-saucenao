@@ -531,6 +531,7 @@ class TwitterSauce:
     https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
     https://help.twitter.com/forms/dmca""", in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
             else:
-                api.update_status(f"This account has blocked {self.my.name}. For more information, please refer to:\n"
+                api.update_status(f"This account has blocked {self.my.name} for helping people like you. Be wary; they may block you as well for sharing the source or for requesting me!\n"
+                                  f"\nFor more information, please refer to:\n"
                                   "https://github.com/FujiMakoto/twitter-saucenao#art-thieves-saucebot-has-been-blocked-by",
                                   in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
