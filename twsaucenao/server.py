@@ -581,4 +581,19 @@ class TwitterSauce:
         if media_ids:
             kwargs['media_ids'] = media_ids
 
-        return api.update_status(msg, **kwargs)
+        try:
+            return api.update_status(msg, **kwargs)
+        except tweepy.error.TweepError as error:
+            if error.api_code == 136:
+                self.log.warning("A user requested our presence, then blocked us before we could respond. Wow.")
+            # We attempted to process a tweet from a user that has restricted access to their account
+            elif error.api_code in [179, 385]:
+                self.log.info(f"Attempted to reply to a deleted tweet or a tweet we don't have permission to view")
+                raise TwSauceNoMediaException
+            # Someone got impatient and deleted a tweet before we could get too it
+            elif error.api_code == 144:
+                self.log.info(f"Not replying to a tweet that no longer exists")
+                raise TwSauceNoMediaException
+            # Something unfamiliar happened, log an error for later review
+            else:
+                self.log.error(f"Unable to post due to an unknown Twitter error: {error.api_code} - {error.reason}")
