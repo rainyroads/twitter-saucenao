@@ -287,9 +287,15 @@ class TwitterSauce:
                 # Check for an exactly title match first, then fallback to a similarity check.
                 # Obviously, this is not perfect. Titles don't always match, but sometimes tracemoe returns an accurate
                 # result with a lower similarity, so we just.. try and guess the best we can for now.
-                if _tracemoe_sauce['docs'][0]['similarity'] < 0.85:
-                    if _tracemoe_sauce['docs'][0]['title_english'].lower() != sauce.results[0].title.lower():
-                        if _tracemoe_sauce['docs'][0]['title_romaji'].lower() != sauce.results[0].title.lower():
+                tm_english_title = _tracemoe_sauce['docs'][0]['title_english'].lower()
+                tm_romaji_title  = _tracemoe_sauce['docs'][0]['title_romaji'].lower()
+                sn_title         = sauce.results[0].title.lower()
+
+                if tm_english_title != sn_title:
+                    self.log.warning(f'[{log_index}] saucenao and trace.moe provided mismatched english titles: `{sn_title}` vs. `{tm_english_title}`')
+                    if _tracemoe_sauce['docs'][0]['title_romaji'].lower() != sauce.results[0].title.lower():
+                        self.log.warning(f'[{log_index}] saucenao and trace.moe provided mismatched romaji titles: `{sn_title}` vs. `{tm_romaji_title}`')
+                        if _tracemoe_sauce['docs'][0]['similarity'] < 0.85:
                             return None
 
                 _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
