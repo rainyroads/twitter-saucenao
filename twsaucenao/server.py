@@ -291,13 +291,15 @@ class TwitterSauce:
                 tm_romaji_title  = _tracemoe_sauce['docs'][0]['title_romaji'].lower()
                 sn_title         = sauce.results[0].title.lower()
 
-                if tm_english_title != sn_title:
-                    self.log.warning(f'[{log_index}] saucenao and trace.moe provided mismatched english titles: `{sn_title}` vs. `{tm_english_title}`')
-                    if _tracemoe_sauce['docs'][0]['title_romaji'].lower() != sauce.results[0].title.lower():
-                        self.log.warning(f'[{log_index}] saucenao and trace.moe provided mismatched romaji titles: `{sn_title}` vs. `{tm_romaji_title}`')
+                if tm_romaji_title != sn_title:
+                    self.log.warning(f'[{log_index}] saucenao and trace.moe provided mismatched english titles: `{sn_title}` vs. `{tm_romaji_title}`')
+                    if tm_english_title != sn_title:
+                        self.log.warning(f'[{log_index}] saucenao and trace.moe provided mismatched romaji titles: `{sn_title}` vs. `{tm_english_title}`')
                         if _tracemoe_sauce['docs'][0]['similarity'] < 0.85:
+                            self.log.warning(f'[{log_index}] Similarity check failed on trace.moe query for `{sn_title}`')
                             return None
 
+                self.log.info(f'[{log_index}] Downloading video preview for `{tm_english_title}` from trace.moe')
                 _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
                 _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
                 return _tracemoe_sauce['docs'][0]
@@ -515,10 +517,20 @@ class TwitterSauce:
             reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
 
         try:
-            if tracemoe_sauce and (not tracemoe_sauce['is_adult'] or self._nsfw_previews):
-                tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
-                comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True,
-                                            media_ids=[tw_response['media_id']], possibly_sensitive=tracemoe_sauce['is_adult'])
+            if tracemoe_sauce and tracemoe_sauce['is_adult'] and not self._nsfw_previews:
+                self.log.warning(f'NSFW video previews are disabled, skipping preview of `{sauce.title}`')
+            elif tracemoe_sauce:
+                try:
+                    tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
+                    comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True,
+                                                media_ids=[tw_response['media_id']], possibly_sensitive=tracemoe_sauce['is_adult'])
+                except tweepy.error.TweepError as error:
+                    if error.api_code == 324:
+                        self.log.warning(f"Video preview for `{sauce.title}` was too short to upload to Twitter")
+                        comment = api.update_status(reply, in_reply_to_status_id=tweet.id,
+                                                    auto_populate_reply_metadata=True)
+                    else:
+                        raise error
             else:
                 comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
         except tweepy.TweepError as error:
