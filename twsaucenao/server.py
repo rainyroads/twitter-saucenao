@@ -37,6 +37,7 @@ class TwitterSauce:
         self.minsim_monitored = float(config.get('SauceNao', 'min_similarity_monitored', fallback=65.0))
         self.minsim_searching = float(config.get('SauceNao', 'min_similarity_searching', fallback=70.0))
         self.persistent = config.getboolean('Twitter', 'enable_persistence', fallback=False)
+        self.anime_link = config.get('SauceNao', 'source_link', fallback='anidb').lower()
         self.sauce = SauceNao(
                 api_key=config.get('SauceNao', 'api_key', fallback=None),
                 min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching),
@@ -48,8 +49,7 @@ class TwitterSauce:
         if config.getboolean('TraceMoe', 'enabled', fallback=False):
             self.tracemoe = ATraceMoe(config.get('TraceMoe', 'token', fallback=None))
 
-        self._anime_link = config.get('TraceMoe', 'source_link', fallback='anidb').lower()
-        self._nsfw_previews = config.getboolean('TraceMoe', 'nsfw_previews', fallback=False)
+        self.nsfw_previews = config.getboolean('TraceMoe', 'nsfw_previews', fallback=False)
 
         # Pixiv
         self.pixiv = Pixiv()
@@ -429,20 +429,25 @@ class TwitterSauce:
                 self._post(msg=message, to=tweet.id)
             return
 
+        # Get a map of source ID's
+        ids = None
+        if sauce.index_id in [21, 22] and 'anidb_aid' in sauce.data:
+            ids = await self._anidb_id_map(sauce.data['anidb_aid'])
+
         # For limiting the length of the title/author
         repr = reprlib.Repr()
         repr.maxstring = 32
 
         # Add additional sauce URL's from trace.moe if available
         sauce_urls = []
-        if tracemoe_sauce:
-            if self._anime_link in ['anilist', 'animal', 'all']:
-                sauce_urls.append(f"https://anilist.co/anime/{tracemoe_sauce['anilist_id']}/")
+        if ids:
+            if self.anime_link in ['anilist', 'animal', 'all'] and ids.get('anilist'):
+                sauce_urls.append(f"https://anilist.co/anime/{ids['anilist']}/")
 
-            if self._anime_link in ['myanimelist', 'animal', 'all'] and tracemoe_sauce.get('mal_id'):
-                sauce_urls.append(f"https://myanimelist.net/anime/{tracemoe_sauce['mal_id']}/")
+            if self.anime_link in ['myanimelist', 'animal', 'all'] and ids.get('myanimelist'):
+                sauce_urls.append(f"https://myanimelist.net/anime/{ids['myanimelist']}/")
 
-            if self._anime_link in ['anidb', 'all']:
+            if self.anime_link in ['anidb', 'all']:
                 sauce_urls.append(sauce.url)
 
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
@@ -515,7 +520,7 @@ class TwitterSauce:
 
         try:
             # trace.moe time! Let's get a video preview
-            if tracemoe_sauce and tracemoe_sauce['is_adult'] and not self._nsfw_previews:
+            if tracemoe_sauce and tracemoe_sauce['is_adult'] and not self.nsfw_previews:
                 self.log.warning(f'NSFW video previews are disabled, skipping preview of `{sauce.title}`')
             elif tracemoe_sauce:
                 try:
@@ -565,6 +570,28 @@ class TwitterSauce:
                 "https://github.com/FujiMakoto/twitter-saucenao#art-thieves-saucebot-has-been-blocked-by"
                 # noinspection PyUnboundLocalVariable
                 self._post(msg=message, to=comment.id)
+
+    async def _anidb_id_map(self, anidb_id: int) -> Optional[Dict[str, int]]:
+        """
+        Get a map of AniDB to other service ID's
+        Args:
+            anidb_id (int): AniDB ID
+
+        Returns:
+            Optional[Dict[int]]
+        """
+        self.log.debug(f"[SYSTEM] Getting a map of ID's for AniDB entry {anidb_id}")
+
+        async with aiohttp.ClientSession(raise_for_status=True) as session:
+            try:
+                response = await session.get(f'https://relations.yuna.moe/api/ids?source=anidb&id={anidb_id}')
+                data = await response.json()
+                self.log.debug(data)
+                return data
+            except aiohttp.ClientError:
+                self.log.warning('[SYSTEM] yuna.moe server appears to be down or is not responding to our requests')
+
+        return None
 
     def _post(self, msg: str, to: Optional[int], media_ids: Optional[List[int]] = None, sensitive: bool = False):
         """
