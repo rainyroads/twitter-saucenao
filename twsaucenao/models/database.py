@@ -170,7 +170,7 @@ class TweetSauceCache(db.Entity):
             )
             return _cache
 
-        if not sauce_results or not sauce_results.results:
+        if not sauce_results:
             return no_results()
 
         # Get the first result and make sure it meets our minimum similarity requirement
