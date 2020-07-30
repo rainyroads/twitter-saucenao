@@ -9,7 +9,8 @@ from typing import *
 import aiohttp
 import tweepy
 import twython
-from pysaucenao import BooruSource, DailyLimitReachedException, MangaSource, PixivSource, SauceNao, SauceNaoException, \
+from pysaucenao import AnimeSource, BooruSource, DailyLimitReachedException, MangaSource, PixivSource, SauceNao, \
+    SauceNaoException, \
     ShortLimitReachedException, \
     VideoSource
 from tracemoe import ATraceMoe
@@ -271,36 +272,27 @@ class TwitterSauce:
         media = TweetManager.extract_media(tweet_cache.tweet)[index_no]
 
         # Execute a Tracemoe search query for anime results
-        async def tracemoe_search(_sauce, is_url: bool) -> Optional[dict]:
+        async def tracemoe_search(_sauce_results, _path: str, is_url: bool) -> Optional[dict]:
             if not self.tracemoe:
                 return None
 
-            if _sauce.results and _sauce.results[0].index_id in [21, 22]:
+            if _sauce_results and isinstance(_sauce_results[0], AnimeSource):
                 # noinspection PyBroadException
                 try:
-                    _tracemoe_sauce = await self.tracemoe.search(path, is_url=is_url)
+                    _tracemoe_sauce = await self.tracemoe.search(_path, is_url=is_url)
                 except Exception:
                     self.log.warning(f"[{log_index}] Tracemoe returned an exception, aborting search query")
                     return None
                 if not _tracemoe_sauce.get('docs'):
                     return None
 
-                # Check for an exactly title match first, then fallback to a similarity check.
-                # Obviously, this is not perfect. Titles don't always match, but sometimes tracemoe returns an accurate
-                # result with a lower similarity, so we just.. try and guess the best we can for now.
-                tm_english_title = _tracemoe_sauce['docs'][0]['title_english'].lower()
-                tm_romaji_title  = _tracemoe_sauce['docs'][0]['title_romaji'].lower()
-                sn_title         = sauce.results[0].title.lower()
+                # Make sure our search results match
+                await _sauce_results[0].load_ids()
+                if _sauce_results[0].anilist_id != _tracemoe_sauce['docs'][0]['anilist_id']:
+                    self.log.warning(f"[{log_index}] saucenao and trace.moe provided mismatched anilist entries: `{_sauce_results[0].anilist_id}` vs. `{_tracemoe_sauce['docs'][0]['anilist_id']}`")
+                    return None
 
-                if tm_romaji_title != sn_title:
-                    self.log.warning(f'[{log_index}] saucenao and trace.moe provided mismatched english titles: `{sn_title}` vs. `{tm_romaji_title}`')
-                    if tm_english_title != sn_title:
-                        self.log.warning(f'[{log_index}] saucenao and trace.moe provided mismatched romaji titles: `{sn_title}` vs. `{tm_english_title}`')
-                        if _tracemoe_sauce['docs'][0]['similarity'] < 0.85:
-                            self.log.warning(f'[{log_index}] Similarity check failed on trace.moe query for `{sn_title}`')
-                            return None
-
-                self.log.info(f'[{log_index}] Downloading video preview for `{tm_english_title}` from trace.moe')
+                self.log.info(f'[{log_index}] Downloading video preview for AniList entry {_sauce_results[0].anilist_id} from trace.moe')
                 _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
                 _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
                 return _tracemoe_sauce['docs'][0]
@@ -329,17 +321,17 @@ class TwitterSauce:
                                 sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no, trigger=trigger)
                                 return sauce_cache
 
-                        sauce = await self.sauce.from_file(path)
-                        tracemoe_sauce = await tracemoe_search(sauce, is_url=False)
+                        sauce_results = await self.sauce.from_file(path)
+                        tracemoe_sauce = await tracemoe_search(sauce_results, _path=path, is_url=False)
                 finally:
                     os.remove(path)
             else:
                 self.log.debug(f"[{log_index}] Performing remote URL lookup")
-                sauce = await self.sauce.from_url(media)
-                tracemoe_sauce = await tracemoe_search(sauce, is_url=True)
+                sauce_results = await self.sauce.from_url(media)
+                tracemoe_sauce = await tracemoe_search(sauce_results, _path=media, is_url=True)
 
-            if not sauce.results:
-                sauce_cache = TweetSauceCache.set(tweet_cache, sauce, index_no, trigger=trigger)
+            if not sauce_results:
+                sauce_cache = TweetSauceCache.set(tweet_cache, sauce_results, index_no, trigger=trigger)
                 return sauce_cache, None
         except ShortLimitReachedException:
             self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
@@ -354,7 +346,7 @@ class TwitterSauce:
             sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no, trigger=trigger)
             return sauce_cache, None
 
-        sauce_cache = TweetSauceCache.set(tweet_cache, sauce, index_no, trigger=trigger)
+        sauce_cache = TweetSauceCache.set(tweet_cache, sauce_results, index_no, trigger=trigger)
         return sauce_cache, tracemoe_sauce
 
     def get_closest_media(self, tweet, log_index: Optional[str] = None) -> Optional[Tuple[TweetCache, TweetCache, List[str]]]:
@@ -429,26 +421,23 @@ class TwitterSauce:
                 self._post(msg=message, to=tweet.id)
             return
 
-        # Get a map of source ID's
-        ids = None
-        if sauce.index_id in [21, 22] and 'anidb_aid' in sauce.data:
-            ids = await self._anidb_id_map(sauce.data['anidb_aid'])
+        # Add additional sauce URL's if available
+        sauce_urls = []
+        if isinstance(sauce, AnimeSource):
+            await sauce.load_ids()
+
+            if self.anime_link in ['anilist', 'animal', 'all'] and sauce.anilist_url:
+                sauce_urls.append(sauce.anilist_url)
+
+            if self.anime_link in ['myanimelist', 'animal', 'all'] and sauce.mal_url:
+                sauce_urls.append(sauce.mal_url)
+
+            if self.anime_link in ['anidb', 'all']:
+                sauce_urls.append(sauce.url)
 
         # For limiting the length of the title/author
         repr = reprlib.Repr()
         repr.maxstring = 32
-
-        # Add additional sauce URL's from trace.moe if available
-        sauce_urls = []
-        if ids:
-            if self.anime_link in ['anilist', 'animal', 'all'] and ids.get('anilist'):
-                sauce_urls.append(f"https://anilist.co/anime/{ids['anilist']}/")
-
-            if self.anime_link in ['myanimelist', 'animal', 'all'] and ids.get('myanimelist'):
-                sauce_urls.append(f"https://myanimelist.net/anime/{ids['myanimelist']}/")
-
-            if self.anime_link in ['anidb', 'all']:
-                sauce_urls.append(sauce.url)
 
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
         if sauce.index not in ['H-Misc', 'E-Hentai']:
@@ -570,28 +559,6 @@ class TwitterSauce:
                 "https://github.com/FujiMakoto/twitter-saucenao#art-thieves-saucebot-has-been-blocked-by"
                 # noinspection PyUnboundLocalVariable
                 self._post(msg=message, to=comment.id)
-
-    async def _anidb_id_map(self, anidb_id: int) -> Optional[Dict[str, int]]:
-        """
-        Get a map of AniDB to other service ID's
-        Args:
-            anidb_id (int): AniDB ID
-
-        Returns:
-            Optional[Dict[int]]
-        """
-        self.log.debug(f"[SYSTEM] Getting a map of ID's for AniDB entry {anidb_id}")
-
-        async with aiohttp.ClientSession(raise_for_status=True) as session:
-            try:
-                response = await session.get(f'https://relations.yuna.moe/api/ids?source=anidb&id={anidb_id}')
-                data = await response.json()
-                self.log.debug(data)
-                return data
-            except aiohttp.ClientError:
-                self.log.warning('[SYSTEM] yuna.moe server appears to be down or is not responding to our requests')
-
-        return None
 
     def _post(self, msg: str, to: Optional[int], media_ids: Optional[List[int]] = None, sensitive: bool = False):
         """
