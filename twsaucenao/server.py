@@ -514,29 +514,39 @@ class TwitterSauce:
             reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
 
         try:
+            # trace.moe time! Let's get a video preview
             if tracemoe_sauce and tracemoe_sauce['is_adult'] and not self._nsfw_previews:
                 self.log.warning(f'NSFW video previews are disabled, skipping preview of `{sauce.title}`')
             elif tracemoe_sauce:
                 try:
+                    # Attempt to upload our preview video
                     tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
                     comment = self._post(msg=reply, to=tweet.id, media_ids=[tw_response['media_id']],
                                          sensitive=tracemoe_sauce['is_adult'])
+
+                # Video was too short. Can happen if we're using natural previews
                 except tweepy.error.TweepError as error:
                     if error.api_code == 324:
                         self.log.warning(f"Video preview for `{sauce.title}` was too short to upload to Twitter")
                         comment = self._post(msg=reply, to=tweet.id)
                     else:
                         raise error
+
+                # Likely a connection error
                 except twython.exceptions.TwythonError as error:
                     self.log.error(f"An error occurred while uploading a video preview: {error.msg}")
                     comment = self._post(msg=reply, to=tweet.id)
+
+            # This was hentai and we want to avoid uploading hentai clips to this account
             else:
                 comment = self._post(msg=reply, to=tweet.id)
+
+        # Try and handle any tweet too long errors
         except tweepy.TweepError as error:
             if error.api_code == 186 and not requested:
                 self.log.info("Post is too long; scrubbing bot instructions from message")
                 # noinspection PyUnboundLocalVariable
-                comment = self._post(msg=reply, to=tweet.id)
+                comment = self._post(msg=_reply, to=tweet.id)
             else:
                 raise error
 
