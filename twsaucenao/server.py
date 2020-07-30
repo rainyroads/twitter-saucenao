@@ -8,6 +8,7 @@ from typing import *
 
 import aiohttp
 import tweepy
+import twython
 from pysaucenao import BooruSource, DailyLimitReachedException, MangaSource, PixivSource, SauceNao, SauceNaoException, \
     ShortLimitReachedException, \
     VideoSource
@@ -531,6 +532,10 @@ class TwitterSauce:
                                                     auto_populate_reply_metadata=True)
                     else:
                         raise error
+                except twython.exceptions.TwythonError as error:
+                    self.log.error(f"An error occurred while uploading a video preview: {error.msg}")
+                    comment = api.update_status(reply, in_reply_to_status_id=tweet.id,
+                                                auto_populate_reply_metadata=True)
             else:
                 comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
         except tweepy.TweepError as error:
