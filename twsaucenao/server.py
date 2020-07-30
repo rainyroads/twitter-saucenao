@@ -376,10 +376,8 @@ class TwitterSauce:
             if error.api_code == 136:
                 # noinspection PyBroadException
                 try:
-                    api.update_status(
-                            f"@{tweet.author.screen_name} Sorry, it looks like the author of this post has blocked us. For more information, please refer to:\nhttps://github.com/FujiMakoto/twitter-saucenao/#blocked-by",
-                            in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True
-                    )
+                    message = f"@{tweet.author.screen_name} Sorry, it looks like the author of this post has blocked us. For more information, please refer to:\nhttps://github.com/FujiMakoto/twitter-saucenao/#blocked-by"
+                    self._post(msg=message, to=tweet.id)
                 except Exception as error:
                     self.log.exception(f"[{log_index}] An exception occurred while trying to inform a user that an account has blocked us")
                 raise TwSauceNoMediaException
@@ -427,10 +425,8 @@ class TwitterSauce:
                 tinyeye_url = f"https://www.tineye.com/search?url={media[sauce_cache.index_no]}"
                 google_url  = f"https://www.google.com/searchbyimage?image_url={media[sauce_cache.index_no]}&safe=off"
 
-                api.update_status(
-                        f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nTry checking one of these search engines!\n{yandex_url}\n{google_url}\n{tinyeye_url}",
-                        in_reply_to_status_id=tweet.id
-                )
+                message = f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nTry checking one of these search engines!\n{yandex_url}\n{google_url}\n{tinyeye_url}"
+                self._post(msg=message, to=tweet.id)
             return
 
         # For limiting the length of the title/author
@@ -523,26 +519,24 @@ class TwitterSauce:
             elif tracemoe_sauce:
                 try:
                     tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
-                    comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True,
-                                                media_ids=[tw_response['media_id']], possibly_sensitive=tracemoe_sauce['is_adult'])
+                    comment = self._post(msg=reply, to=tweet.id, media_ids=[tw_response['media_id']],
+                                         sensitive=tracemoe_sauce['is_adult'])
                 except tweepy.error.TweepError as error:
                     if error.api_code == 324:
                         self.log.warning(f"Video preview for `{sauce.title}` was too short to upload to Twitter")
-                        comment = api.update_status(reply, in_reply_to_status_id=tweet.id,
-                                                    auto_populate_reply_metadata=True)
+                        comment = self._post(msg=reply, to=tweet.id)
                     else:
                         raise error
                 except twython.exceptions.TwythonError as error:
                     self.log.error(f"An error occurred while uploading a video preview: {error.msg}")
-                    comment = api.update_status(reply, in_reply_to_status_id=tweet.id,
-                                                auto_populate_reply_metadata=True)
+                    comment = self._post(msg=reply, to=tweet.id)
             else:
-                comment = api.update_status(reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
+                comment = self._post(msg=reply, to=tweet.id)
         except tweepy.TweepError as error:
             if error.api_code == 186 and not requested:
                 self.log.info("Post is too long; scrubbing bot instructions from message")
                 # noinspection PyUnboundLocalVariable
-                comment = api.update_status(_reply, in_reply_to_status_id=tweet.id, auto_populate_reply_metadata=True)
+                comment = self._post(msg=reply, to=tweet.id)
             else:
                 raise error
 
@@ -550,11 +544,37 @@ class TwitterSauce:
         if blocked:
             if twitter_sauce:
                 self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
-                api.update_status(f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたの絵を盗んで、私があなたを明記したらブロックされちゃいました
+                message = f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたの絵を盗んで、私があなたを明記したらブロックされちゃいました
     https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
-    https://help.twitter.com/forms/dmca""", in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
+    https://help.twitter.com/forms/dmca"""
+                # noinspection PyUnboundLocalVariable
+                self._post(msg=message, to=comment.id)
             else:
-                api.update_status(f"This account has blocked {self.my.name} for helping people like you. Be wary; they may block you as well for sharing the source or for requesting me!\n"
-                                  f"\nFor more information, please refer to:\n"
-                                  "https://github.com/FujiMakoto/twitter-saucenao#art-thieves-saucebot-has-been-blocked-by",
-                                  in_reply_to_status_id=comment.id, auto_populate_reply_metadata=True)
+                message = f"This account has blocked {self.my.name} for helping people like you. Be wary; they may block you as well for sharing the source or for requesting me!\n"
+                f"\nFor more information, please refer to:\n"
+                "https://github.com/FujiMakoto/twitter-saucenao#art-thieves-saucebot-has-been-blocked-by"
+                # noinspection PyUnboundLocalVariable
+                self._post(msg=message, to=comment.id)
+
+    def _post(self, msg: str, to: Optional[int], media_ids: Optional[List[int]] = None, sensitive: bool = False):
+        """
+        Perform a twitter API status update
+        Args:
+            msg (str): Message to send
+            to (Optional[int]): Status ID we are replying to
+            media_ids (Optional[List[int]]): List of media ID's
+            sensitive (bool): Whether or not this tweet contains NSFW media
+
+        Returns:
+
+        """
+        kwargs = {'possibly_sensitive': sensitive}
+
+        if to:
+            kwargs['in_reply_to_status_id'] = to
+            kwargs['auto_populate_reply_metadata'] = True
+
+        if media_ids:
+            kwargs['media_ids'] = media_ids
+
+        return api.update_status(msg, **kwargs)
