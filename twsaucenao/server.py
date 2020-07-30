@@ -111,8 +111,8 @@ class TwitterSauce:
                         await self.get_sauce(media_cache, log_index=self.my.screen_name,
                                              trigger=TRIGGER_MONITORED, index_no=len(media) - 1)
 
-                self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
-                                blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
+                await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
+                                      blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
@@ -182,8 +182,8 @@ class TwitterSauce:
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[{account}] Failed to find sauce for tweet {tweet.id}")
 
-                    self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
-                                    requested=False)
+                    await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
+                                          requested=False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[{account}] No sauce found for tweet {tweet.id}")
                     continue
@@ -250,8 +250,8 @@ class TwitterSauce:
                     self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
 
-                    self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
-                                    requested=False)
+                    await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
+                                          requested=False)
                 except TwSauceNoMediaException:
                     self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
                     continue
@@ -397,8 +397,8 @@ class TwitterSauce:
         # Still here? Yay! We have something then.
         return original_cache, media_cache, media
 
-    def send_reply(self, tweet_cache: TweetCache, media_cache: TweetCache, sauce_cache: TweetSauceCache,
-                   tracemoe_sauce: Optional[dict] = None, requested: bool = True, blocked: bool = False) -> None:
+    async def send_reply(self, tweet_cache: TweetCache, media_cache: TweetCache, sauce_cache: TweetSauceCache,
+                         tracemoe_sauce: Optional[dict] = None, requested: bool = True, blocked: bool = False) -> None:
         """
         Return the source of the image
         Args:
