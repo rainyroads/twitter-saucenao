@@ -287,15 +287,15 @@ class TwitterSauce:
                     return None
 
                 # Make sure our search results match
-                await _sauce_results[0].load_ids()
-                if _sauce_results[0].anilist_id != _tracemoe_sauce['docs'][0]['anilist_id']:
-                    self.log.warning(f"[{log_index}] saucenao and trace.moe provided mismatched anilist entries: `{_sauce_results[0].anilist_id}` vs. `{_tracemoe_sauce['docs'][0]['anilist_id']}`")
-                    return None
+                if await _sauce_results[0].load_ids():
+                    if _sauce_results[0].anilist_id != _tracemoe_sauce['docs'][0]['anilist_id']:
+                        self.log.warning(f"[{log_index}] saucenao and trace.moe provided mismatched anilist entries: `{_sauce_results[0].anilist_id}` vs. `{_tracemoe_sauce['docs'][0]['anilist_id']}`")
+                        return None
 
-                self.log.info(f'[{log_index}] Downloading video preview for AniList entry {_sauce_results[0].anilist_id} from trace.moe')
-                _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
-                _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
-                return _tracemoe_sauce['docs'][0]
+                    self.log.info(f'[{log_index}] Downloading video preview for AniList entry {_sauce_results[0].anilist_id} from trace.moe')
+                    _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
+                    _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
+                    return _tracemoe_sauce['docs'][0]
 
             return None
 
