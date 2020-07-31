@@ -8,7 +8,7 @@
 
 **A:** No. This is an entirely unofficial project that is not directly affiliated with SauceNao in any way. I just write the bot software and manage a library that interacts with SauceNao's public API, but I have no hand in the amazing work Xamayon does himself.
 
-**Q:** Why can't you find the source of <insert random image>?
+**Q:** Why can't you find the source of \<insert random image\>?
 
 **A:** I am a bot, and unfortunately machines aren't perfect! I do my best to keep things tuned and only provide accurate results, but unfortunately services such as SauceNao are easily tripped up by things like awkward crops, black bars and so on. It's also possible whatever you are requesting simply doesn't exist in any of SauceNao's databases.
 
