@@ -289,7 +289,7 @@ class TwitterSauce:
                 # Make sure our search results match
                 if await _sauce_results[0].load_ids():
                     if _sauce_results[0].anilist_id != _tracemoe_sauce['docs'][0]['anilist_id']:
-                        self.log.warning(f"[{log_index}] saucenao and trace.moe provided mismatched anilist entries: `{_sauce_results[0].anilist_id}` vs. `{_tracemoe_sauce['docs'][0]['anilist_id']}`")
+                        self.log.info(f"[{log_index}] saucenao and trace.moe provided mismatched anilist entries: `{_sauce_results[0].anilist_id}` vs. `{_tracemoe_sauce['docs'][0]['anilist_id']}`")
                         return None
 
                     self.log.info(f'[{log_index}] Downloading video preview for AniList entry {_sauce_results[0].anilist_id} from trace.moe')
@@ -510,7 +510,7 @@ class TwitterSauce:
         try:
             # trace.moe time! Let's get a video preview
             if tracemoe_sauce and tracemoe_sauce['is_adult'] and not self.nsfw_previews:
-                self.log.warning(f'NSFW video previews are disabled, skipping preview of `{sauce.title}`')
+                self.log.info(f'NSFW video previews are disabled, skipping preview of `{sauce.title}`')
             elif tracemoe_sauce:
                 try:
                     # Attempt to upload our preview video
@@ -521,7 +521,7 @@ class TwitterSauce:
                 # Video was too short. Can happen if we're using natural previews
                 except tweepy.error.TweepError as error:
                     if error.api_code == 324:
-                        self.log.warning(f"Video preview for `{sauce.title}` was too short to upload to Twitter")
+                        self.log.info(f"Video preview for `{sauce.title}` was too short to upload to Twitter")
                         comment = self._post(msg=reply, to=tweet.id)
                     else:
                         raise error
