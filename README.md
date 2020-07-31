@@ -101,6 +101,7 @@ Thank you so much to all of our supporters on [Patreon](https://www.patreon.com/
 * James P Harris
 * Karter
 * Part
+* Patrick Swasey
 
 #### Supporting Characters ($3)
 
