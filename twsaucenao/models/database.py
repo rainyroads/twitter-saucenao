@@ -5,7 +5,7 @@ import pysaucenao
 import tweepy
 from pony.orm import *
 from pysaucenao import GenericSource
-from pysaucenao.containers import PixivSource, SauceNaoResults, VideoSource
+from pysaucenao.containers import SauceNaoResults
 
 from twsaucenao.api import api
 from twsaucenao.config import config
