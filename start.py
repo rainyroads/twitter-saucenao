@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 from twsaucenao.config import config
 from twsaucenao.log import log
