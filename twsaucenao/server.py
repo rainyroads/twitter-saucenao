@@ -461,12 +461,12 @@ class TwitterSauce:
             if sauce.similarity >= 60.0:
                 reply = f"@{tweet.author.screen_name} I found this in the {sauce.index} database!\n"
             else:
-                reply = f"@{tweet.author.screen_name} The accuracy for this {sauce.index} result is very low, so it might be wrong!"
+                reply = f"@{tweet.author.screen_name} The accuracy for this {sauce.index} result is very low, so it might be wrong!\n"
         else:
             if sauce.similarity >= 60.0:
                 reply = f"Need the sauce? I found it in the {sauce.index} database!\n"
             else:
-                reply = f"I found something in the {sauce.index} database that might be related, but the accuracy is low. Sorry if it's not helpful!"
+                reply = f"I found something in the {sauce.index} database that might be related, but the accuracy is low. Sorry if it's not helpful!\n"
 
         # If it's a Pixiv source, try and get their Twitter handle (this is considered most important and displayed first)
         twitter_sauce = None
