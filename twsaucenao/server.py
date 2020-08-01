@@ -525,15 +525,6 @@ class TwitterSauce:
                     tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
                     comment = self._post(msg=reply, to=tweet.id, media_ids=[tw_response['media_id']],
                                          sensitive=tracemoe_sauce['is_adult'])
-
-                # Video was too short. Can happen if we're using natural previews
-                except tweepy.error.TweepError as error:
-                    if error.api_code == 324:
-                        self.log.info(f"Video preview for `{sauce.title}` was too short to upload to Twitter")
-                        comment = self._post(msg=reply, to=tweet.id)
-                    else:
-                        raise error
-
                 # Likely a connection error
                 except twython.exceptions.TwythonError as error:
                     self.log.error(f"An error occurred while uploading a video preview: {error.msg}")
@@ -602,6 +593,10 @@ class TwitterSauce:
             elif error.api_code == 144:
                 self.log.info(f"Not replying to a tweet that no longer exists")
                 raise TwSauceNoMediaException
+            # Video was too short. Can happen if we're using natural previews. Repost without the video clip
+            elif error.api_code == 324:
+                self.log.info(f"Video preview for was too short to upload to Twitter")
+                return self._post(msg=msg, to=to, sensitive=sensitive)
             # Something unfamiliar happened, log an error for later review
             else:
                 self.log.error(f"Unable to post due to an unknown Twitter error: {error.api_code} - {error.reason}")
