@@ -448,7 +448,9 @@ class TwitterSauce:
 
         # Format the similarity string
         similarity = f'𝗔𝗰𝗰𝘂𝗿𝗮𝗰𝘆: {sauce.similarity}% ( '
-        if sauce.similarity >= 85.0:
+        if sauce.similarity >= 95:
+            similarity = similarity + '🟢 Exact Match )'
+        elif sauce.similarity >= 85.0:
             similarity = similarity + '🔵 High )'
         elif sauce.similarity >= 70.0:
             similarity = similarity + '🟡 Medium )'
