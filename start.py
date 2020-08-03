@@ -48,23 +48,6 @@ async def monitored() -> None:
 
 
 # noinspection PyBroadException
-async def search() -> None:
-    """
-    Perform a search query for our monitored key-phrase and respond to any applicable posts
-    Returns:
-        None
-    """
-    while True:
-        try:
-            # Search query
-            await twitter.check_query()
-            await asyncio.sleep(search_interval)
-        except Exception:
-            log.exception("An unknown error occurred while executing a search query")
-            await asyncio.sleep(60.0)
-
-
-# noinspection PyBroadException
 async def cleanup() -> None:
     """
     Purge stale cache entries from the database and display some general analytics
@@ -98,7 +81,6 @@ async def main() -> None:
         tasks.append(mentions())
 
     tasks.append(monitored())
-    tasks.append(search())
     tasks.append(cleanup())
 
     await asyncio.gather(*tasks)
