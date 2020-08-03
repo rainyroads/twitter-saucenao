@@ -483,12 +483,6 @@ class TwitterSauce:
     https://help.twitter.com/forms/dmca"""
                 # noinspection PyUnboundLocalVariable
                 self._post(msg=message, to=comment.id)
-            else:
-                message = f"This account has blocked {self.my.name} for helping people like you. Be wary; they may block you as well for sharing the source or for requesting me!\n"
-                f"\nFor more information, please refer to:\n"
-                "https://github.com/FujiMakoto/twitter-saucenao#art-thieves-saucebot-has-been-blocked-by"
-                # noinspection PyUnboundLocalVariable
-                self._post(msg=message, to=comment.id)
 
     def _post(self, msg: str, to: Optional[int], media_ids: Optional[List[int]] = None, sensitive: bool = False):
         """
