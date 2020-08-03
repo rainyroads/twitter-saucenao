@@ -67,17 +67,11 @@ class TwitterSauce:
         # Used in the check_monitored() method to prevent re-posting sauces when posts are re-tweeted
         self._posts_processed = []
 
-        # Search queries (optional)
-        self.search_queries = str(config.get('Twitter', 'monitored_keywords', fallback=''))
-        self.search_queries = [k.strip() for k in self.search_queries.split(',') if k.strip()]
-        self.search_charlimit = config.getint('Twitter', 'search_char_limit', fallback=120)
-
         # The ID cutoff, we populate this once via an initial query at startup
         try:
             self.since_id = tweepy.Cursor(api.mentions_timeline, tweet_mode='extended', count=1).items(1).next().id
         except StopIteration:
             self.since_id = 0
-        self.query_since = {}
         self.monitored_since = {}
 
     # noinspection PyBroadException
@@ -190,71 +184,6 @@ class TwitterSauce:
                     continue
                 except Exception:
                     self.log.exception(f"[{account}] An unknown error occurred while processing tweet {tweet.id}")
-                    continue
-
-    async def check_query(self) -> None:
-        """
-        Performs a search query for a specific key-phrase (e.g. "sauce pls") and attempts to find the source of the
-        image for someone. It's a really wild buckshot method of operating, but it could have potential use!
-        Returns:
-            None
-        """
-        if not self.search_queries:
-            self.log.debug("[SEARCH] Search query monitoring disabled")
-            return
-
-        for query in self.search_queries:
-            search_results = api.search(query, result_type='recent', count=10, include_entities=True,
-                                        since_id=self.query_since.get(query, 0), tweet_mode='extended')
-
-            # Populate the starting max ID
-            if not self.query_since.get(query):
-                self.query_since[query] = search_results[0].id
-                self.log.info(f"[SEARCH] Monitoring tweets after {self.query_since[query]} for search query: {query}")
-                continue
-
-            # Iterate and process the search results
-            for tweet in search_results:
-                # Update the ID cutoff before continuing
-                self.query_since[query] = max([self.query_since[query], tweet.id])
-
-                # Make sure we aren't searching ourselves somehow
-                if tweet.author.id == self.my.id:
-                    self.log.debug(f"[SEARCH] Skip: Ignoring a self-tweet")
-                    continue
-
-                # Make sure we don't respond twice if the user used our trigger phrase AND mentioned us
-                if f'@{self.my.screen_name}' in tweet.full_text:
-                    self.log.info("[SEARCH] Skip: This query includes a bot mention")
-                    continue
-
-                # Make sure this post doesn't exceed the character limit
-                if len(tweet.full_text) >= self.search_charlimit:
-                    self.log.info(f"[SEARCH] Skip: Query matched but exceeded the {self.search_charlimit} character limit")
-                    continue
-
-                try:
-                    # Process the tweet for media content
-                    self.log.info(f"[SEARCH] Processing tweet {tweet.id}")
-                    original_cache, media_cache, media = self.get_closest_media(tweet, 'SEARCH')
-                    self.log.info(f"[SEARCH] Found media post in tweet {tweet.id}: {media[0]}")
-
-                    # Get the sauce
-                    sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index='SEARCH', trigger=TRIGGER_SEARCH)
-                    sauce = sauce_cache.sauce
-                    if not sauce and len(media) > 1 and self.persistent:
-                        sauce_cache, tracemoe_sauce = \
-                            await self.get_sauce(media_cache, log_index='SEARCH', trigger=TRIGGER_MONITORED,
-                                                 index_no=len(media) - 1)
-                        sauce = sauce_cache.sauce
-
-                    self.log.info(f"[SEARCH] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
-                                  else f"[SEARCH] Failed to find sauce for tweet {tweet.id}")
-
-                    await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
-                                          requested=False)
-                except TwSauceNoMediaException:
-                    self.log.info(f"[SEARCH] No sauce found for tweet {tweet.id}")
                     continue
 
     async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: Optional[str] = None,
