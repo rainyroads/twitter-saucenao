@@ -14,6 +14,23 @@ twitter = TwitterSauce()
 
 
 # noinspection PyBroadException
+async def self() -> None:
+    """
+    Respond to any mentions requesting sauce lookups
+    Returns:
+        None
+    """
+    while True:
+        try:
+            # Mentions
+            await twitter.check_self()
+            await asyncio.sleep(monitored_interval)
+        except Exception:
+            log.exception("An unknown error occurred while checking mentions")
+            await asyncio.sleep(60.0)
+
+
+# noinspection PyBroadException
 async def mentions() -> None:
     """
     Respond to any mentions requesting sauce lookups
@@ -77,6 +94,9 @@ async def main() -> None:
         None
     """
     tasks = []
+    if config.getboolean('Twitter', 'monitor_self', fallback=False):
+        tasks.append(self())
+
     if not config.getboolean('Twitter', 'disable_mentions', fallback=False):
         tasks.append(mentions())
 
