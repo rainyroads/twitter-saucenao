@@ -19,6 +19,7 @@ from twython import Twython
 from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.errors import *
+from twsaucenao.lang import lang
 from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SEARCH, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
 from twsaucenao.twitter import TweetManager
@@ -346,7 +347,10 @@ class TwitterSauce:
                 tinyeye_url = f"https://www.tineye.com/search?url={media[sauce_cache.index_no]}"
                 google_url  = f"https://www.google.com/searchbyimage?image_url={media[sauce_cache.index_no]}&safe=off"
 
-                message = f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nTry checking one of these search engines!\n{yandex_url}\n{google_url}\n{tinyeye_url}"
+                message = lang('Errors', 'no_results',
+                               {'yandex_url': yandex_url, 'tinyeye_url': tinyeye_url, 'google_url': google_url},
+                               user=tweet.author)
+                print(message)
                 self._post(msg=message, to=tweet.id)
             return
 
