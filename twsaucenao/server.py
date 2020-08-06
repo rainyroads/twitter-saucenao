@@ -20,7 +20,7 @@ from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.errors import *
 from twsaucenao.lang import lang
-from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TweetCache, TweetSauceCache
+from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SELF, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
 from twsaucenao.twitter import ReplyLine, TweetManager
 
@@ -70,10 +70,57 @@ class TwitterSauce:
 
         # The ID cutoff, we populate this once via an initial query at startup
         try:
-            self.since_id = tweepy.Cursor(api.mentions_timeline, tweet_mode='extended', count=1).items(1).next().id
+            self.mention_id = tweepy.Cursor(api.mentions_timeline, tweet_mode='extended', count=1).items(1).next().id
         except StopIteration:
-            self.since_id = 0
+            self.mention_id = 0
+
+        try:
+            self.self_id = tweepy.Cursor(api.user_timeline, tweet_mode='extended', count=1).items(1).next().id
+        except StopIteration:
+            self.self_id = 0
+
         self.monitored_since = {}
+
+    # noinspection PyBroadException
+    async def check_self(self) -> None:
+        """
+        Check for new posts from our own account to process
+        Returns:
+            None
+        """
+        self.log.info(f"[{self.my.screen_name}] Retrieving posts since tweet {self.self_id}")
+        posts = [*tweepy.Cursor(api.user_timeline, since_id=self.self_id, tweet_mode='extended').items()]
+
+        # Filter tweets without a reply AND attachment
+        for tweet in posts:
+            try:
+                # Update the ID cutoff before attempting to parse the tweet
+                self.self_id = max([self.self_id, tweet.id])
+                self.log.debug(f"[{self.my.screen_name}] New self-post max ID cutoff: {self.self_id}")
+
+                # Make sure this isn't a retweet
+                if tweet.full_text.startswith('RT @'):
+                    self.log.debug(f"[{self.my.screen_name}] Skipping a re-tweet")
+                    continue
+
+                # Attempt to parse the tweets media content
+                original_cache, media_cache, media = self.get_closest_media(tweet, self.my.screen_name)
+
+                # Get the sauce!
+                sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=self.my.screen_name)
+                if not sauce_cache.sauce and len(media) > 1 and self.persistent:
+                    sauce_cache, tracemoe_sauce = \
+                        await self.get_sauce(media_cache, log_index=self.my.screen_name,
+                                             trigger=TRIGGER_SELF, index_no=len(media) - 1)
+
+                await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
+                                      blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
+            except TwSauceNoMediaException:
+                self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
+                continue
+            except Exception:
+                self.log.exception(f"[{self.my.screen_name}] An unknown error occurred while processing tweet {tweet.id}")
+                continue
 
     # noinspection PyBroadException
     async def check_mentions(self) -> None:
@@ -82,15 +129,15 @@ class TwitterSauce:
         Returns:
             None
         """
-        self.log.info(f"[{self.my.screen_name}] Retrieving mentions since tweet {self.since_id}")
-        mentions = [*tweepy.Cursor(api.mentions_timeline, since_id=self.since_id, tweet_mode='extended').items()]
+        self.log.info(f"[{self.my.screen_name}] Retrieving mentions since tweet {self.mention_id}")
+        mentions = [*tweepy.Cursor(api.mentions_timeline, since_id=self.mention_id, tweet_mode='extended').items()]
 
         # Filter tweets without a reply AND attachment
         for tweet in mentions:
             try:
                 # Update the ID cutoff before attempting to parse the tweet
-                self.since_id = max([self.since_id, tweet.id])
-                self.log.debug(f"[{self.my.screen_name}] New max ID cutoff: {self.since_id}")
+                self.mention_id = max([self.mention_id, tweet.id])
+                self.log.debug(f"[{self.my.screen_name}] New max ID cutoff: {self.mention_id}")
 
                 # Make sure we aren't mentioning ourselves
                 if tweet.author.id == self.my.id:
