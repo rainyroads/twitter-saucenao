@@ -20,7 +20,7 @@ from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.errors import *
 from twsaucenao.lang import lang
-from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SEARCH, TweetCache, TweetSauceCache
+from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
 from twsaucenao.twitter import ReplyLine, TweetManager
 
