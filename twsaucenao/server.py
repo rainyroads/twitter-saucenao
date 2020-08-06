@@ -19,6 +19,7 @@ from twython import Twython
 from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.errors import *
+from twsaucenao.lang import lang
 from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SEARCH, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
 from twsaucenao.twitter import TweetManager
@@ -297,7 +298,7 @@ class TwitterSauce:
             if error.api_code == 136:
                 # noinspection PyBroadException
                 try:
-                    message = f"@{tweet.author.screen_name} Sorry, it looks like the author of this post has blocked us. For more information, please refer to:\nhttps://github.com/FujiMakoto/twitter-saucenao/#blocked-by"
+                    message = lang('Errors', 'blocked', user=tweet.author)
                     self._post(msg=message, to=tweet.id)
                 except Exception as error:
                     self.log.exception(f"[{log_index}] An exception occurred while trying to inform a user that an account has blocked us")
@@ -346,7 +347,9 @@ class TwitterSauce:
                 tinyeye_url = f"https://www.tineye.com/search?url={media[sauce_cache.index_no]}"
                 google_url  = f"https://www.google.com/searchbyimage?image_url={media[sauce_cache.index_no]}&safe=off"
 
-                message = f"@{tweet.author.screen_name} Sorry, I couldn't find anything (●´ω｀●)ゞ\nYour image may be cropped too much, or the artist may simply not exist in any of SauceNao's databases.\n\nTry checking one of these search engines!\n{yandex_url}\n{google_url}\n{tinyeye_url}"
+                message = lang('Errors', 'no_results',
+                               {'yandex_url': yandex_url, 'tinyeye_url': tinyeye_url, 'google_url': google_url},
+                               user=tweet.author)
                 self._post(msg=message, to=tweet.id)
             return
 
@@ -376,56 +379,56 @@ class TwitterSauce:
             title = repr.repr(sauce.title).strip("'")
 
         # Format the similarity string
-        similarity = f'𝗔𝗰𝗰𝘂𝗿𝗮𝗰𝘆: {sauce.similarity}% ( '
+        similarity = lang('Accuracy', 'prefix', {'similarity': sauce.similarity})
         if sauce.similarity >= 95:
-            similarity = similarity + '🟢 Exact Match )'
+            similarity = similarity + lang('Accuracy', 'exact')
         elif sauce.similarity >= 85.0:
-            similarity = similarity + '🔵 High )'
+            similarity = similarity + lang('Accuracy', 'high')
         elif sauce.similarity >= 70.0:
-            similarity = similarity + '🟡 Medium )'
+            similarity = similarity + lang('Accuracy', 'medium')
         elif sauce.similarity >= 60.0:
-            similarity = similarity + '🟠 Low )'
+            similarity = similarity + lang('Accuracy', 'low')
         else:
-            similarity = similarity + '🔴 Very Low )'
+            similarity = similarity + lang('Accuracy', 'very_low')
 
         if requested:
             if sauce.similarity >= 60.0:
-                reply = f"@{tweet.author.screen_name} I found this in the {sauce.index} database!\n"
+                reply = lang('Results', 'requested_found', {'index': sauce.index}, user=tweet.author) + "\n"
             else:
-                reply = f"@{tweet.author.screen_name} The accuracy for this {sauce.index} result is very low, so it might be wrong!\n"
+                reply = lang('Results', 'requested_found_low_accuracy', {'index': sauce.index}, user=tweet.author) + "\n"
         else:
             if sauce.similarity >= 60.0:
-                reply = f"Need the sauce? I found it in the {sauce.index} database!\n"
+                reply = lang('Results', 'other_found', {'index': sauce.index}, user=tweet.author) + "\n"
             else:
-                reply = f"I found something in the {sauce.index} database that might be related, but the accuracy is low. Sorry if it's not helpful!\n"
+                reply = lang('Results', 'other_found_low_accuracy', {'index': sauce.index}, user=tweet.author)
 
         # If it's a Pixiv source, try and get their Twitter handle (this is considered most important and displayed first)
         twitter_sauce = None
         if isinstance(sauce, PixivSource):
             twitter_sauce = self.pixiv.get_author_twitter(sauce.data['member_id'])
             if twitter_sauce:
-                reply += f"\n𝗔𝗿𝘁𝗶𝘀𝘁𝘀 𝗧𝘄𝗶𝘁𝘁𝗲𝗿: {twitter_sauce}"
+                reply += "\n" + lang('Results', 'twitter', {'twitter': twitter_sauce})
 
         # Print the author name if available
         if sauce.author_name:
             author = repr.repr(sauce.author_name).strip("'")
-            reply += f"\n𝗔𝘂𝘁𝗵𝗼𝗿: {author}"
+            reply += "\n" + lang('Results', 'author', {'author': author})
 
         # Omit the title for Pixiv results since it's usually always non-romanized Japanese and not very helpful
         if not isinstance(sauce, PixivSource):
-            reply += f"\n𝗧𝗶𝘁𝗹𝗲: {title}"
+            reply += "\n" + lang('Results', 'title', {'title': title})
 
         # Add the episode number and timestamp for video sources
         if isinstance(sauce, VideoSource):
             if sauce.episode:
-                reply += f"\n𝗘𝗽𝗶𝘀𝗼𝗱𝗲: {sauce.episode}"
+                reply += "\n" + lang('Results', 'episode', {'episode': title})
             if sauce.timestamp:
-                reply += f" ( ⏱️ {sauce.timestamp} )"
+                reply += lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
 
         # Add the chapter for manga sources
         if isinstance(sauce, MangaSource):
             if sauce.chapter:
-                reply += f"\n𝗖𝗵𝗮𝗽𝘁𝗲𝗿: {sauce.chapter}"
+                reply += "\n" + lang('Results', 'chapter', {'chapter': sauce.chapter})
 
         # Display our confidence rating
         reply += f"\n{similarity}"
@@ -444,7 +447,9 @@ class TwitterSauce:
         # Try and append bot instructions with monitored posts. This might make our post too long, though.
         if not requested:
             _reply = reply
-            reply += f"\n\nNeed sauce elsewhere? Just follow and (@)mention me in a reply and I'll be right over!"
+            promo_footer = lang('Results', 'other_footer')
+            if promo_footer:
+                reply += "\n\n" + promo_footer
 
         try:
             # trace.moe time! Let's get a video preview
