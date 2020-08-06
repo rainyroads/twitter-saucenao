@@ -9,7 +9,7 @@ import tweepy
 from twsaucenao.config import config
 
 # Set up localization for use elsewhere in the application
-_language = config.get('Bot', 'Language', fallback='english')
+_language = config.get('System', 'Language', fallback='english')
 _language_config = ConfigParser()
 _language_config.read(os.path.join('lang', f'{_language}.ini'), 'utf-8')
 
@@ -62,6 +62,7 @@ def rand_lang(category: str, replacements: typing.Optional[dict] = None, default
     return string
 
 
+# noinspection PyUnresolvedReferences
 def _member_replacements(string: str, user: tweepy.models.User) -> str:
     """
     Perform some standard replacements for language strings
