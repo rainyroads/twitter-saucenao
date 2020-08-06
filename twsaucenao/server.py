@@ -22,7 +22,7 @@ from twsaucenao.errors import *
 from twsaucenao.lang import lang
 from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SEARCH, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
-from twsaucenao.twitter import TweetManager
+from twsaucenao.twitter import ReplyLine, TweetManager
 
 
 class TwitterSauce:
@@ -353,6 +353,9 @@ class TwitterSauce:
                 self._post(msg=message, to=tweet.id)
             return
 
+        # Lines with priority attributes incase we need to shorten them
+        lines = []
+
         # Add additional sauce URL's if available
         sauce_urls = []
         if isinstance(sauce, AnimeSource):
@@ -394,90 +397,89 @@ class TwitterSauce:
         if requested:
             if sauce.similarity >= 60.0:
                 reply = lang('Results', 'requested_found', {'index': sauce.index}, user=tweet.author) + "\n"
+                lines.append(ReplyLine(reply, 1))
             else:
                 reply = lang('Results', 'requested_found_low_accuracy', {'index': sauce.index}, user=tweet.author) + "\n"
+                lines.append(ReplyLine(reply, 1))
         else:
             if sauce.similarity >= 60.0:
                 reply = lang('Results', 'other_found', {'index': sauce.index}, user=tweet.author) + "\n"
+                lines.append(ReplyLine(reply, 1))
             else:
                 reply = lang('Results', 'other_found_low_accuracy', {'index': sauce.index}, user=tweet.author)
+                lines.append(ReplyLine(reply, 1))
 
         # If it's a Pixiv source, try and get their Twitter handle (this is considered most important and displayed first)
         twitter_sauce = None
         if isinstance(sauce, PixivSource):
             twitter_sauce = self.pixiv.get_author_twitter(sauce.data['member_id'])
             if twitter_sauce:
-                reply += "\n" + lang('Results', 'twitter', {'twitter': twitter_sauce})
+                reply = lang('Results', 'twitter', {'twitter': twitter_sauce})
+                lines.append(ReplyLine(reply, newlines=1))
 
         # Print the author name if available
         if sauce.author_name:
             author = repr.repr(sauce.author_name).strip("'")
-            reply += "\n" + lang('Results', 'author', {'author': author})
+            reply = lang('Results', 'author', {'author': author})
+            lines.append(ReplyLine(reply, newlines=1))
 
         # Omit the title for Pixiv results since it's usually always non-romanized Japanese and not very helpful
         if not isinstance(sauce, PixivSource):
-            reply += "\n" + lang('Results', 'title', {'title': title})
+            reply = lang('Results', 'title', {'title': title})
+            lines.append(ReplyLine(reply, 10, newlines=1))
 
         # Add the episode number and timestamp for video sources
         if isinstance(sauce, VideoSource):
             if sauce.episode:
-                reply += "\n" + lang('Results', 'episode', {'episode': title})
-            if sauce.timestamp:
-                reply += lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
+                reply = lang('Results', 'episode', {'episode': title})
+                if sauce.timestamp:
+                    reply += lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
+
+                lines.append(ReplyLine(reply, 5, newlines=1))
 
         # Add the chapter for manga sources
         if isinstance(sauce, MangaSource):
             if sauce.chapter:
-                reply += "\n" + lang('Results', 'chapter', {'chapter': sauce.chapter})
+                reply = lang('Results', 'chapter', {'chapter': sauce.chapter})
+                lines.append(ReplyLine(reply, 5, newlines=1))
 
         # Display our confidence rating
-        reply += f"\n{similarity}"
+        lines.append(ReplyLine(similarity, 2, newlines=1))
 
         # Source URL's are not available in some indexes
         if sauce_urls:
-            reply += "\n\n"
-            reply += "\n".join(sauce_urls)
+            reply = "\n".join(sauce_urls)
+            lines.append(ReplyLine(reply, newlines=2))
         elif sauce.source_url:
-            reply += f"\n\n{sauce.source_url}"
+            lines.append(ReplyLine(sauce.source_url, newlines=2))
 
         # Some Booru posts have bad source links cited, so we should always provide a Booru link with the source URL
         if isinstance(sauce, BooruSource) and sauce.source_url != sauce.url:
-            reply += f"\n{sauce.url}"
+            lines.append(ReplyLine(sauce.url, 2, newlines=1))
 
         # Try and append bot instructions with monitored posts. This might make our post too long, though.
         if not requested:
-            _reply = reply
             promo_footer = lang('Results', 'other_footer')
             if promo_footer:
-                reply += "\n\n" + promo_footer
+                lines.append(ReplyLine(promo_footer, 0, newlines=2))
 
-        try:
-            # trace.moe time! Let's get a video preview
-            if tracemoe_sauce and tracemoe_sauce['is_adult'] and not self.nsfw_previews:
-                self.log.info(f'NSFW video previews are disabled, skipping preview of `{sauce.title}`')
-            elif tracemoe_sauce:
-                try:
-                    # Attempt to upload our preview video
-                    tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
-                    comment = self._post(msg=reply, to=tweet.id, media_ids=[tw_response['media_id']],
-                                         sensitive=tracemoe_sauce['is_adult'])
-                # Likely a connection error
-                except twython.exceptions.TwythonError as error:
-                    self.log.error(f"An error occurred while uploading a video preview: {error.msg}")
-                    comment = self._post(msg=reply, to=tweet.id)
+        # trace.moe time! Let's get a video preview
+        if tracemoe_sauce and tracemoe_sauce['is_adult'] and not self.nsfw_previews:
+            self.log.info(f'NSFW video previews are disabled, skipping preview of `{sauce.title}`')
+        elif tracemoe_sauce:
+            try:
+                # Attempt to upload our preview video
+                tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
+                comment = self._post(msg=lines, to=tweet.id, media_ids=[tw_response['media_id']],
+                                     sensitive=tracemoe_sauce['is_adult'])
+            # Likely a connection error
+            except twython.exceptions.TwythonError as error:
+                self.log.error(f"An error occurred while uploading a video preview: {error.msg}")
+                comment = self._post(msg=lines, to=tweet.id)
 
-            # This was hentai and we want to avoid uploading hentai clips to this account
-            else:
-                comment = self._post(msg=reply, to=tweet.id)
-
-        # Try and handle any tweet too long errors
-        except tweepy.TweepError as error:
-            if error.api_code == 186 and not requested:
-                self.log.info("Post is too long; scrubbing bot instructions from message")
-                # noinspection PyUnboundLocalVariable
-                comment = self._post(msg=_reply, to=tweet.id)
-            else:
-                raise error
+        # This was hentai and we want to avoid uploading hentai clips to this account
+        else:
+            comment = self._post(msg=lines, to=tweet.id)
 
         # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
         if blocked:
@@ -489,11 +491,12 @@ class TwitterSauce:
                 # noinspection PyUnboundLocalVariable
                 self._post(msg=message, to=comment.id)
 
-    def _post(self, msg: str, to: Optional[int], media_ids: Optional[List[int]] = None, sensitive: bool = False):
+    def _post(self, msg: Union[str, List[ReplyLine]], to: Optional[int], media_ids: Optional[List[int]] = None,
+              sensitive: bool = False):
         """
         Perform a twitter API status update
         Args:
-            msg (str): Message to send
+            msg (Union[str, List[ReplyLine]]): Message to send
             to (Optional[int]): Status ID we are replying to
             media_ids (Optional[List[int]]): List of media ID's
             sensitive (bool): Whether or not this tweet contains NSFW media
@@ -509,6 +512,10 @@ class TwitterSauce:
 
         if media_ids:
             kwargs['media_ids'] = media_ids
+
+        lines = msg if isinstance(msg, list) else None
+        if lines:
+            msg = ''.join(map(str, lines))
 
         try:
             return api.update_status(msg, **kwargs)
@@ -528,5 +535,54 @@ class TwitterSauce:
                 self.log.info(f"Video preview for was too short to upload to Twitter")
                 return self._post(msg=msg, to=to, sensitive=sensitive)
             # Something unfamiliar happened, log an error for later review
+            elif error.api_code == 186 and lines:
+                self.log.warning("Post is too long; scrubbing message length")
+
+                def _retry(_lines):
+                    _lines = self._shorten_reply(_lines)
+                    try:
+                        _msg = ''.join(map(str, _lines))
+                        return api.update_status(_msg, **kwargs)
+                    except tweepy.TweepError as error:
+                        if error.api_code != 186:
+                            raise error
+
+                        return False
+
+                # Shorten the post as much as we can until it fits
+                while True:
+                    try:
+                        success = _retry(lines)
+                    except IndexError:
+                        self.log.error(f"Failed to shorten response message to tweet {to} enough")
+                        break
+
+                    if not success:
+                        self.log.warning(f"Tweet to {to} still not short enough; running another pass")
+                        continue
+
+                    self.log.debug(f"Tweet for {to} shortened successfully")
+                    break
             else:
                 self.log.error(f"Unable to post due to an unknown Twitter error: {error.api_code} - {error.reason}")
+
+    def _shorten_reply(self, reply_lines: List[ReplyLine]):
+        """
+        Dynamically shorten a response until it fits within Twitter's 240 character limit
+        Args:
+            reply_lines (List[ReplyLine]):
+
+        Returns:
+            List[ReplyLine]
+
+        Raises:
+            IndexError: Impossible to shorten this tweet any further; give up
+        """
+        min_index, min_value = min(enumerate(reply_lines), key=lambda x: x[1].priority)
+
+        # Nothing else to remove. Should virtually never reach this point.
+        if min_value.priority == 100:
+            raise IndexError
+
+        reply_lines.pop(min_index)
+        return reply_lines

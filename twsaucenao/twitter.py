@@ -154,3 +154,13 @@ class TweetManager:
                 return None
 
         return [m['media_url_https'] for m in media]
+
+
+class ReplyLine:
+    def __init__(self, message: str, priority: Optional[int] = 100, newlines: int = 0):
+        self.message = message
+        self.priority = priority
+        self.newlines = newlines
+
+    def __str__(self):
+        return ("\n" * self.newlines) + self.message
