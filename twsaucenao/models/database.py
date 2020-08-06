@@ -22,7 +22,7 @@ else:
 
 TRIGGER_MENTION = 'mentioned'
 TRIGGER_MONITORED = 'monitored'
-TRIGGER_SEARCH = 'searching'
+TRIGGER_SELF = 'self'
 
 
 # noinspection PyMethodParameters
