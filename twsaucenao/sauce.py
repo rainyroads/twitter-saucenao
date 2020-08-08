@@ -50,8 +50,8 @@ class SauceManager:
 
     async def _get_sauce(self, index: int) -> Optional[TweetSauceCache]:
         cache = TweetSauceCache.fetch(self.tweet_cache.tweet_id, index)
-        if cache and not cache.sauce:
-            return None
+        if cache:
+            return cache
 
         media = TweetManager.extract_media(self.tweet_cache.tweet)[index]
 
