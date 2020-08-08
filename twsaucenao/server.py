@@ -138,6 +138,9 @@ class TwitterSauce:
 
                 # Attempt to parse the tweets media content
                 original_cache, media_cache, media = self.get_closest_media(tweet, self.my.screen_name)
+                if media_cache.tweet.author.id == self.my.id:
+                    self.log.info("Not performing a sauce lookup to our own tweet")
+                    continue
 
                 # Get the sauce!
                 sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
@@ -424,12 +427,7 @@ class TwitterSauce:
 
         # trace.moe time! Let's get a video preview
         if sauce_cache.media_id:
-            try:
-                comment = self._post(msg=lines, to=tweet.id, media_ids=[sauce_cache.media_id])
-            # Likely a connection error
-            except twython.exceptions.TwythonError as error:
-                self.log.error(f"An error occurred while uploading a video preview: {error.msg}")
-                comment = self._post(msg=lines, to=tweet.id)
+            comment = self._post(msg=lines, to=tweet.id, media_ids=[sauce_cache.media_id])
 
         # This was hentai and we want to avoid uploading hentai clips to this account
         else:

@@ -123,13 +123,18 @@ class TweetManager:
             if (parent.tweet.author.id == self.my.id) or (parent.tweet.author.id == SAUCENAOPLS_TWITTER_ID):
                 return True
 
+            # Standard ID check
+            if tweet.author.id == self.my.id:
+                self.log.info(f"Skipping a reply to a bot mention via tweet {tweet.id}")
+                return True
+
             # When someone mentions us to get the sauce of an item, we need to make sure that when others comment
             # on that reply, we don't take that as them also requesting the sauce to the same item.
             # This is due to the weird way Twitter's API works. The only best way I know to do this is to look up the
             # parent tweet ID and see if we're mentioned anywhere in it. If we are, don't reply again.
             if f'@{self.my.screen_name}' in parent.tweet.full_text:
-                self.log.info(f"Skipping a reply to a bot mention via tweet {parent.tweet_id}")
-                raise TwSauceNoMediaException
+                self.log.info(f"Skipping a reply to a bot mention via tweet {tweet.id}")
+                return True
 
         return False
 

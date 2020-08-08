@@ -41,8 +41,6 @@ class SauceManager:
 
         self._sauce_cache = {}
 
-        self._file_handler = None
-
     async def get(self, index: int):
         try:
             return self._sauce_cache[index]
@@ -147,6 +145,3 @@ class SauceManager:
             return int(tw_response['media_id'])
         except twython.exceptions.TwythonError as error:
             self._log.error(f"An error occurred while uploading a video preview: {error.msg}")
-
-    def __index__(self):
-        pass
