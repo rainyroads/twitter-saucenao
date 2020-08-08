@@ -142,8 +142,11 @@ class TwitterSauce:
                     self.log.info("Not performing a sauce lookup to our own tweet")
                     continue
 
+                # Did we request a specific index?
+                index = self._determine_requested_index(tweet, media_cache) or None
+
                 # Get the sauce!
-                sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
+                sauce_cache = await self.get_sauce(media_cache, index_no=index, log_index=self.my.screen_name)
                 await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
                                       blocked=media_cache.blocked)
             except TwSauceNoMediaException:
@@ -538,3 +541,62 @@ class TwitterSauce:
 
         reply_lines.pop(min_index)
         return reply_lines
+
+    def _determine_requested_index(self, tweet, media_cache: TweetSauceCache) -> int:
+        """
+        Determined the requested sauce lookup for multi-image tweets
+        """
+        media = TweetManager.extract_media(media_cache.tweet)
+        request_text = tweet.full_text.lower().strip()
+
+        # If there's only one item, that's all we can return
+        if len(media) == 1:
+            return 0
+
+        # Right / Left image parsing
+        if len(media) == 2:
+            if 'right' in request_text:
+                self.log.debug("User requested the right image")
+                return 1
+
+            if 'left' in request_text:
+                self.log.debug("User requested the left image")
+                return 0
+
+        if len(media) == 4:
+            if 'top left' in request_text:
+                self.log.debug("User requested the top left image")
+                return 0
+            if 'top right' in request_text:
+                self.log.debug("User requested the top right image")
+                return 1
+            if 'bottom left' in request_text:
+                self.log.debug("User requested the bottom left image")
+                return 2
+            if 'bottom right' in request_text:
+                self.log.debug("User requested the bottom right image")
+                return 3
+
+        # First / last image parsing
+        if 'first' in request_text:
+            self.log.debug("User requested the first image")
+            return 0
+        if 'last' in request_text:
+            self.log.debug("User requested the last image")
+            return len(media) - 1
+
+        # Otherwise, try parsing specific ordinals
+        if request_text == '1':
+            self.log.debug("User explicitly requested index 0")
+            return 0
+        if (request_text == '2' or 'second' in request_text) and len(media) >= 2:
+            self.log.debug("User explicitly requested index 1")
+            return 1
+        if (request_text == '3' or 'third' in request_text) and len(media) >= 3:
+            self.log.debug("User explicitly requested index 2")
+            return 2
+        if (request_text == 4 or 'fourth' in request_text) and len(media) == 4:
+            self.log.debug("User explicitly requested index 3")
+            return 3
+
+        return 0
