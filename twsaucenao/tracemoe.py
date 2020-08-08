@@ -1,5 +1,3 @@
-from typing import Optional
-
 from tracemoe import ATraceMoe
 
 from twsaucenao.config import config

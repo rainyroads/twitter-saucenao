@@ -1,12 +1,8 @@
 import asyncio
-import io
 import logging
-import os
 import reprlib
-import tempfile
 from typing import *
 
-import aiohttp
 import tweepy
 import twython
 from pysaucenao import AnimeSource, BooruSource, DailyLimitReachedException, MangaSource, PixivSource, SauceNao, \
@@ -20,7 +16,7 @@ from twsaucenao.api import api
 from twsaucenao.config import config
 from twsaucenao.errors import *
 from twsaucenao.lang import lang
-from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SELF, TweetCache, TweetSauceCache
+from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
 from twsaucenao.sauce import SauceManager
 from twsaucenao.twitter import ReplyLine, TweetManager

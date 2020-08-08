@@ -1,17 +1,15 @@
 import io
 import logging
-import os
-from typing import *
-
 import typing
+from typing import *
 
 import aiohttp
 import twython
-from pysaucenao import GenericSource, SauceNao, AnimeSource
+from pysaucenao import AnimeSource, SauceNao
 from twython import Twython
 
 from twsaucenao.config import config
-from twsaucenao.models.database import TweetCache, TweetSauceCache, TRIGGER_SELF
+from twsaucenao.models.database import TRIGGER_SELF, TweetCache, TweetSauceCache
 from twsaucenao.tracemoe import tracemoe
 from twsaucenao.twitter import TweetManager
 
