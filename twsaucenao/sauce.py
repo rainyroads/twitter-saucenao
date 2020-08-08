@@ -11,16 +11,19 @@ from pysaucenao import GenericSource, SauceNao, AnimeSource
 from twython import Twython
 
 from twsaucenao.config import config
-from twsaucenao.models.database import TweetCache, TweetSauceCache
+from twsaucenao.models.database import TweetCache, TweetSauceCache, TRIGGER_SELF
 from twsaucenao.tracemoe import tracemoe
 from twsaucenao.twitter import TweetManager
 
 
 class SauceManager:
-    def __init__(self, media_tweet: TweetCache):
+    def __init__(self, media_tweet: TweetCache, trigger: str = TRIGGER_SELF):
         self._log = logging.getLogger(__name__)
-        self.tweet = media_tweet
+        self._trigger = trigger
+        self.tweet_cache = media_tweet
         self.media = TweetManager.extract_media(media_tweet) or []
+        self._downloads_enabled = config.getboolean('SauceNao', 'download_files', fallback=False)
+        self._previews_enabled = config.getboolean('TraceMoe', 'enabled', fallback=False)
 
         # SauceNao
         self.minsim_mentioned = float(config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0))
@@ -42,10 +45,45 @@ class SauceManager:
 
         self._file_handler = None
 
-    def _get_sauce(self, index: int) -> Optional[GenericSource]:
-        cache = TweetSauceCache.fetch(self.tweet.tweet_id, index)
+    def _get_sauce(self, index: int) -> Optional[TweetSauceCache]:
+        cache = TweetSauceCache.fetch(self.tweet_cache.tweet_id, index)
         if not cache.sauce:
-            return None, None
+            return None
+
+        media = TweetManager.extract_media(self.tweet_cache.tweet)[index]
+
+        file = media
+        if self._downloads_enabled:
+            file = self._download_media(media)
+
+        if self._downloads_enabled:
+            sauce_results = await self.sauce.from_file(file)
+            self._log.info(f"Performing saucenao lookup via URL {file}")
+        else:
+            self._log.info(f"Performing saucenao lookup via file upload")
+            sauce_results = await self.sauce.from_url(file)
+
+        # No results?
+        if not sauce_results:
+            sauce_cache = TweetSauceCache.set(self.tweet_cache, sauce_results, index, self._trigger)
+            return sauce_cache
+
+        best_result = sauce_results[0]
+
+        # Attempt to download a video preview, if it's an anime result
+        video_preview = None
+        if self._previews_enabled and isinstance(best_result, AnimeSource):
+            await best_result.load_ids()
+            self._log.info(f'Downloading video preview for AniList entry {best_result.anilist_id} from trace.moe')
+            video_preview = await self._video_preview(best_result, file, not self._downloads_enabled)
+
+        # If we have a video preview, upload it now!
+        media_id = None
+        if video_preview:
+            video_preview = io.BytesIO(video_preview)
+            media_id = self._upload_video(video_preview)
+
+        return TweetSauceCache.set(self.tweet_cache, sauce_results, index, self._trigger, media_id)
 
     async def _download_media(self, media_url: str) -> typing.Optional[typing.BinaryIO]:
         """
@@ -70,7 +108,8 @@ class SauceManager:
         except aiohttp.ClientError:
             self._log.exception("An error occurred while trying to download an image from Twitter")
 
-    async def _video_preview(self, sauce: AnimeSource, path_or_fh: Union[str, typing.BinaryIO], is_url: bool) -> Optional[dict]:
+    async def _video_preview(self, sauce: AnimeSource, path_or_fh: Union[str, typing.BinaryIO],
+                             is_url: bool) -> Optional[bytes]:
         if not tracemoe:
             return None
 

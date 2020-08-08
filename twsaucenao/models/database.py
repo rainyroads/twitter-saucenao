@@ -141,7 +141,7 @@ class TweetSauceCache(db.Entity):
     @staticmethod
     @db_session
     def set(tweet: TweetCache, sauce_results: typing.Optional[SauceNaoResults] = None, index_no: int = 0,
-            trigger: str = TRIGGER_MENTION) -> 'TweetSauceCache':
+            trigger: str = TRIGGER_MENTION, media_id: typing.Optional[int] = None) -> 'TweetSauceCache':
         """
         Cache a SauceNao query
         Args:
@@ -149,6 +149,7 @@ class TweetSauceCache(db.Entity):
             sauce_results (Optional[SauceNaoResults]): Results to filter and process
             index_no (int): The media indice for tweets with multiple media uploads
             trigger (str): The event that triggered the sauce lookup (purely for analytics)
+            media_id (Optional[int]): Media ID if a video preview was uploaded with this tweet
 
         Returns:
             TweetSauceCache
@@ -192,6 +193,7 @@ class TweetSauceCache(db.Entity):
                 sauce_class=type(sauce).__name__,
                 sauce_index=sauce.index,
                 trigger=trigger,
+                media_id=media_id,
                 created_at=int(time.time())
         )
         return cache

@@ -22,6 +22,7 @@ from twsaucenao.errors import *
 from twsaucenao.lang import lang
 from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TRIGGER_SELF, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
+from twsaucenao.sauce import SauceManager
 from twsaucenao.twitter import ReplyLine, TweetManager
 
 
@@ -107,12 +108,7 @@ class TwitterSauce:
                 original_cache, media_cache, media = self.get_closest_media(tweet, self.my.screen_name)
 
                 # Get the sauce!
-                sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=self.my.screen_name)
-                if not sauce_cache.sauce and len(media) > 1 and self.persistent:
-                    sauce_cache, tracemoe_sauce = \
-                        await self.get_sauce(media_cache, log_index=self.my.screen_name,
-                                             trigger=TRIGGER_SELF, index_no=len(media) - 1)
-
+                sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
                 await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
                                       blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
             except TwSauceNoMediaException:
@@ -235,81 +231,16 @@ class TwitterSauce:
                     continue
 
     async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: Optional[str] = None,
-                        trigger: str = TRIGGER_MENTION) -> Tuple[TweetSauceCache, Optional[bytes]]:
+                        trigger: str = TRIGGER_MENTION) -> TweetSauceCache:
         """
         Get the sauce of a media tweet
         """
         log_index = log_index or 'SYSTEM'
 
         # Have we cached the sauce already?
-        cache = TweetSauceCache.fetch(tweet_cache.tweet_id, index_no)
-        if cache:
-            return cache, None
-
-        media = TweetManager.extract_media(tweet_cache.tweet)[index_no]
-
-        # Execute a Tracemoe search query for anime results
-        async def tracemoe_search(_sauce_results, _path: str, is_url: bool) -> Optional[dict]:
-            if not self.tracemoe:
-                return None
-
-            if _sauce_results and isinstance(_sauce_results[0], AnimeSource):
-                # noinspection PyBroadException
-                try:
-                    _tracemoe_sauce = await self.tracemoe.search(_path, is_url=is_url)
-                except Exception:
-                    self.log.warning(f"[{log_index}] Tracemoe returned an exception, aborting search query")
-                    return None
-                if not _tracemoe_sauce.get('docs'):
-                    return None
-
-                # Make sure our search results match
-                if await _sauce_results[0].load_ids():
-                    if _sauce_results[0].anilist_id != _tracemoe_sauce['docs'][0]['anilist_id']:
-                        self.log.info(f"[{log_index}] saucenao and trace.moe provided mismatched anilist entries: `{_sauce_results[0].anilist_id}` vs. `{_tracemoe_sauce['docs'][0]['anilist_id']}`")
-                        return None
-
-                    self.log.info(f'[{log_index}] Downloading video preview for AniList entry {_sauce_results[0].anilist_id} from trace.moe')
-                    _tracemoe_preview = await self.tracemoe.video_preview_natural(_tracemoe_sauce)
-                    _tracemoe_sauce['docs'][0]['preview'] = _tracemoe_preview
-                    return _tracemoe_sauce['docs'][0]
-
-            return None
-
-        # Look up the sauce
         try:
-            if config.getboolean('SauceNao', 'download_files', fallback=False):
-                self.log.debug(f"[{log_index}] Downloading image from Twitter")
-                fd, path = tempfile.mkstemp()
-                try:
-                    with os.fdopen(fd, 'wb') as tmp:
-                        async with aiohttp.ClientSession(raise_for_status=True) as session:
-                            try:
-                                async with await session.get(media) as response:
-                                    image = await response.read()
-                                    tmp.write(image)
-                                    if not image:
-                                        self.log.error(f"[{log_index}] Empty file received from Twitter")
-                                        sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no,
-                                                                          trigger=trigger)
-                                        return sauce_cache
-                            except aiohttp.ClientResponseError as error:
-                                self.log.warning(f"[{log_index}] Twitter returned a {error.status} error when downloading from tweet {tweet_cache.tweet_id}")
-                                sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no, trigger=trigger)
-                                return sauce_cache
-
-                        sauce_results = await self.sauce.from_file(path)
-                        tracemoe_sauce = await tracemoe_search(sauce_results, _path=path, is_url=False)
-                finally:
-                    os.remove(path)
-            else:
-                self.log.debug(f"[{log_index}] Performing remote URL lookup")
-                sauce_results = await self.sauce.from_url(media)
-                tracemoe_sauce = await tracemoe_search(sauce_results, _path=media, is_url=True)
-
-            if not sauce_results:
-                sauce_cache = TweetSauceCache.set(tweet_cache, sauce_results, index_no, trigger=trigger)
-                return sauce_cache, None
+            sauce_manager = SauceManager(tweet_cache, trigger)
+            return sauce_manager[index_no]
         except ShortLimitReachedException:
             self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
             await asyncio.sleep(30.0)
@@ -321,10 +252,7 @@ class TwitterSauce:
         except SauceNaoException as e:
             self.log.error(f"[{log_index}] SauceNao exception raised: {e}")
             sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no, trigger=trigger)
-            return sauce_cache, None
-
-        sauce_cache = TweetSauceCache.set(tweet_cache, sauce_results, index_no, trigger=trigger)
-        return sauce_cache, tracemoe_sauce
+            return sauce_cache
 
     def get_closest_media(self, tweet, log_index: Optional[str] = None) -> Optional[Tuple[TweetCache, TweetCache, List[str]]]:
         """
@@ -367,14 +295,13 @@ class TwitterSauce:
         return original_cache, media_cache, media
 
     async def send_reply(self, tweet_cache: TweetCache, media_cache: TweetCache, sauce_cache: TweetSauceCache,
-                         tracemoe_sauce: Optional[dict] = None, requested: bool = True, blocked: bool = False) -> None:
+                         requested: bool = True, blocked: bool = False) -> None:
         """
         Return the source of the image
         Args:
             tweet_cache (TweetCache): The tweet to reply to
             media_cache (TweetCache): The tweet containing media elements
             sauce_cache (Optional[GenericSource]): The sauce found (or None if nothing was found)
-            tracemoe_sauce (Optional[dict]): Tracemoe sauce query, if enabled
             requested (bool): True if the lookup was requested, or False if this is a monitored user account
             blocked (bool): If True, the account posting this has blocked the SauceBot
 
@@ -511,14 +438,9 @@ class TwitterSauce:
                 lines.append(ReplyLine(promo_footer, 0, newlines=2))
 
         # trace.moe time! Let's get a video preview
-        if tracemoe_sauce and tracemoe_sauce['is_adult'] and not self.nsfw_previews:
-            self.log.info(f'NSFW video previews are disabled, skipping preview of `{sauce.title}`')
-        elif tracemoe_sauce:
+        if sauce_cache.media_id:
             try:
-                # Attempt to upload our preview video
-                tw_response = self.twython.upload_video(media=io.BytesIO(tracemoe_sauce['preview']), media_type='video/mp4')
-                comment = self._post(msg=lines, to=tweet.id, media_ids=[tw_response['media_id']],
-                                     sensitive=tracemoe_sauce['is_adult'])
+                comment = self._post(msg=lines, to=tweet.id, media_ids=[sauce_cache.media_id])
             # Likely a connection error
             except twython.exceptions.TwythonError as error:
                 self.log.error(f"An error occurred while uploading a video preview: {error.msg}")
