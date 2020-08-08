@@ -586,16 +586,16 @@ class TwitterSauce:
             return len(media) - 1
 
         # Otherwise, try parsing specific ordinals
-        if request_text == '1':
+        if request_text[-2:] == ' 1':
             self.log.debug("User explicitly requested index 0")
             return 0
-        if (request_text == '2' or 'second' in request_text) and len(media) >= 2:
+        if (request_text[-2:] == ' 2' or 'second' in request_text) and len(media) >= 2:
             self.log.debug("User explicitly requested index 1")
             return 1
-        if (request_text == '3' or 'third' in request_text) and len(media) >= 3:
+        if (request_text[-2:] == ' 3' or 'third' in request_text) and len(media) >= 3:
             self.log.debug("User explicitly requested index 2")
             return 2
-        if (request_text == 4 or 'fourth' in request_text) and len(media) == 4:
+        if (request_text[-2:] == ' 4' or 'fourth' in request_text) and len(media) == 4:
             self.log.debug("User explicitly requested index 3")
             return 3
 
