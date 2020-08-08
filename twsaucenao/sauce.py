@@ -21,7 +21,7 @@ class SauceManager:
         self._log = logging.getLogger(__name__)
         self._trigger = trigger
         self.tweet_cache = media_tweet
-        self.media = TweetManager.extract_media(media_tweet) or []
+        self.media = TweetManager.extract_media(media_tweet.tweet) or []
         self._downloads_enabled = config.getboolean('SauceNao', 'download_files', fallback=False)
         self._previews_enabled = config.getboolean('TraceMoe', 'enabled', fallback=False)
 
@@ -41,26 +41,33 @@ class SauceManager:
         self.twython = Twython(config.get('Twitter', 'consumer_key'), config.get('Twitter', 'consumer_secret'),
                                config.get('Twitter', 'access_token'), config.get('Twitter', 'access_secret'))
 
-        self._sauce_cache = []
+        self._sauce_cache = {}
 
         self._file_handler = None
 
-    def _get_sauce(self, index: int) -> Optional[TweetSauceCache]:
+    async def get(self, index: int):
+        try:
+            return self._sauce_cache[index]
+        except KeyError:
+            self._sauce_cache[index] = await self._get_sauce(index)
+            return self._sauce_cache[index]
+
+    async def _get_sauce(self, index: int) -> Optional[TweetSauceCache]:
         cache = TweetSauceCache.fetch(self.tweet_cache.tweet_id, index)
-        if not cache.sauce:
+        if cache and not cache.sauce:
             return None
 
         media = TweetManager.extract_media(self.tweet_cache.tweet)[index]
 
         file = media
         if self._downloads_enabled:
-            file = self._download_media(media)
+            file = await self._download_media(media)
 
         if self._downloads_enabled:
-            sauce_results = await self.sauce.from_file(file)
-            self._log.info(f"Performing saucenao lookup via URL {file}")
-        else:
+            sauce_results = await self.sauce.from_file(io.BytesIO(file))
             self._log.info(f"Performing saucenao lookup via file upload")
+        else:
+            self._log.info(f"Performing saucenao lookup via URL {file}")
             sauce_results = await self.sauce.from_url(file)
 
         # No results?
@@ -74,18 +81,17 @@ class SauceManager:
         video_preview = None
         if self._previews_enabled and isinstance(best_result, AnimeSource):
             await best_result.load_ids()
-            self._log.info(f'Downloading video preview for AniList entry {best_result.anilist_id} from trace.moe')
-            video_preview = await self._video_preview(best_result, file, not self._downloads_enabled)
+            video_preview = await self._video_preview(best_result, io.BytesIO(file), not self._downloads_enabled)
 
         # If we have a video preview, upload it now!
         media_id = None
         if video_preview:
             video_preview = io.BytesIO(video_preview)
-            media_id = self._upload_video(video_preview)
+            media_id = await self._upload_video(video_preview)
 
         return TweetSauceCache.set(self.tweet_cache, sauce_results, index, self._trigger, media_id)
 
-    async def _download_media(self, media_url: str) -> typing.Optional[typing.BinaryIO]:
+    async def _download_media(self, media_url: str) -> typing.Optional[bytes]:
         """
         Attempt to download an image from twitter and return a BytesIO object
         """
@@ -102,7 +108,7 @@ class SauceManager:
                     self._log.warning(f"Twitter returned a {error.status} error when downloading {media_url}")
                     return None
 
-            return io.BytesIO(image)
+            return image
         except aiohttp.ClientTimeout:
             self._log.warning("Connection timed out while trying to download image from twitter")
         except aiohttp.ClientError:
@@ -116,7 +122,7 @@ class SauceManager:
         try:
             tracemoe_sauce = await tracemoe.search(path_or_fh, is_url=is_url)
         except Exception:
-            self._log.warning("Tracemoe returned an exception, aborting search query")
+            self._log.exception("Tracemoe returned an exception, aborting search query")
             return None
         if not tracemoe_sauce.get('docs'):
             self._log.info("Tracemoe returned no results")
@@ -146,10 +152,3 @@ class SauceManager:
 
     def __index__(self):
         pass
-
-    def __getitem__(self, item):
-        try:
-            return self._sauce_cache[item]
-        except IndexError:
-            self._sauce_cache[item] = self._get_sauce(item)
-            return self._sauce_cache[item]
