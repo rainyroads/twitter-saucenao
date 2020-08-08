@@ -110,7 +110,7 @@ class TwitterSauce:
                 # Get the sauce!
                 sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
                 await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
-                                      blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
+                                      blocked=media_cache.blocked)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
@@ -144,14 +144,9 @@ class TwitterSauce:
                 original_cache, media_cache, media = self.get_closest_media(tweet, self.my.screen_name)
 
                 # Get the sauce!
-                sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=self.my.screen_name)
-                if not sauce_cache.sauce and len(media) > 1 and self.persistent:
-                    sauce_cache, tracemoe_sauce = \
-                        await self.get_sauce(media_cache, log_index=self.my.screen_name,
-                                             trigger=TRIGGER_MONITORED, index_no=len(media) - 1)
-
+                sauce_cache = await self.get_sauce(media_cache, log_index=self.my.screen_name)
                 await self.send_reply(tweet_cache=original_cache, media_cache=media_cache, sauce_cache=sauce_cache,
-                                      blocked=media_cache.blocked, tracemoe_sauce=tracemoe_sauce)
+                                      blocked=media_cache.blocked)
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
@@ -209,14 +204,8 @@ class TwitterSauce:
                     self.log.info(f"[{account}] Found new media post in tweet {tweet.id}: {media[0]}")
 
                     # Get the sauce
-                    sauce_cache, tracemoe_sauce = await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED)
+                    sauce_cache = await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED)
                     sauce = sauce_cache.sauce
-
-                    if not sauce and len(media) > 1 and self.persistent:
-                        sauce_cache, tracemoe_sauce = \
-                            await self.get_sauce(media_cache, log_index=account, trigger=TRIGGER_MONITORED,
-                                                 index_no=len(media) - 1)
-                        sauce = sauce_cache.sauce
 
                     self.log.info(f"[{account}] Found {sauce.index} sauce for tweet {tweet.id}" if sauce
                                   else f"[{account}] Failed to find sauce for tweet {tweet.id}")
@@ -240,7 +229,7 @@ class TwitterSauce:
         # Have we cached the sauce already?
         try:
             sauce_manager = SauceManager(tweet_cache, trigger)
-            return sauce_manager[index_no]
+            return await sauce_manager.get(index_no)
         except ShortLimitReachedException:
             self.log.warning(f"[{log_index}] Short API limit reached, throttling for 30 seconds")
             await asyncio.sleep(30.0)
