@@ -6,7 +6,9 @@ from typing import *
 import typing
 
 import aiohttp
+import twython
 from pysaucenao import GenericSource, SauceNao, AnimeSource
+from twython import Twython
 
 from twsaucenao.config import config
 from twsaucenao.models.database import TweetCache, TweetSauceCache
@@ -31,6 +33,10 @@ class SauceManager:
                 min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching),
                 priority=[21, 22, 5]
         )
+
+        # Twython
+        self.twython = Twython(config.get('Twitter', 'consumer_key'), config.get('Twitter', 'consumer_secret'),
+                               config.get('Twitter', 'access_token'), config.get('Twitter', 'access_secret'))
 
         self._sauce_cache = []
 
@@ -88,6 +94,16 @@ class SauceManager:
             return tracemoe_preview
 
         return None
+
+    async def _upload_video(self, media: io.BytesIO) -> Optional[int]:
+        """
+        Upload a video to Twitter and return the media ID for embedding
+        """
+        try:
+            tw_response = self.twython.upload_video(media=media, media_type='video/mp4')
+            return int(tw_response['media_id'])
+        except twython.exceptions.TwythonError as error:
+            self._log.error(f"An error occurred while uploading a video preview: {error.msg}")
 
     def __index__(self):
         pass
