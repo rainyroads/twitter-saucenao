@@ -143,7 +143,7 @@ class TwitterSauce:
                     continue
 
                 # Did we request a specific index?
-                index = self._determine_requested_index(tweet, media_cache) or None
+                index = self._determine_requested_index(tweet, media_cache)
 
                 # Get the sauce!
                 sauce_cache = await self.get_sauce(media_cache, index_no=index, log_index=self.my.screen_name)
