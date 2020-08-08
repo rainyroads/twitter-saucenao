@@ -346,15 +346,15 @@ class TwitterSauce:
         # Format the similarity string
         similarity = lang('Accuracy', 'prefix', {'similarity': sauce.similarity})
         if sauce.similarity >= 95:
-            similarity = similarity + lang('Accuracy', 'exact')
+            similarity = similarity + " " + lang('Accuracy', 'exact')
         elif sauce.similarity >= 85.0:
-            similarity = similarity + lang('Accuracy', 'high')
+            similarity = similarity + " " + lang('Accuracy', 'high')
         elif sauce.similarity >= 70.0:
-            similarity = similarity + lang('Accuracy', 'medium')
+            similarity = similarity + " " + lang('Accuracy', 'medium')
         elif sauce.similarity >= 60.0:
-            similarity = similarity + lang('Accuracy', 'low')
+            similarity = similarity + " " + lang('Accuracy', 'low')
         else:
-            similarity = similarity + lang('Accuracy', 'very_low')
+            similarity = similarity + " " + lang('Accuracy', 'very_low')
 
         if requested:
             if sauce.similarity >= 60.0:
@@ -395,7 +395,7 @@ class TwitterSauce:
             if sauce.episode:
                 reply = lang('Results', 'episode', {'episode': title})
                 if sauce.timestamp:
-                    reply += lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
+                    reply += " " + lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
 
                 lines.append(ReplyLine(reply, 5, newlines=1))
 
