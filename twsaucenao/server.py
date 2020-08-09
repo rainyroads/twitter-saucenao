@@ -318,6 +318,18 @@ class TwitterSauce:
                 self._post(msg=message, to=tweet.id)
             return
 
+        # Get the artists Twitter handle if possible
+        twitter_sauce = None
+        if isinstance(sauce, PixivSource):
+            twitter_sauce = self.pixiv.get_author_twitter(sauce.data['member_id'])
+
+        # If we're requesting sauce from the original artist, just say so
+        if twitter_sauce and twitter_sauce.lstrip('@').lower() == media_cache.tweet.author.screen_name.lower():
+            self.log.info("User requested sauce from a post by the original artist")
+            message = lang('Errors', 'sauced_the_artist')
+            self._post(message, to=tweet.id)
+            return
+
         # Lines with priority attributes incase we need to shorten them
         lines = []
 
@@ -375,12 +387,9 @@ class TwitterSauce:
                 lines.append(ReplyLine(reply, 1))
 
         # If it's a Pixiv source, try and get their Twitter handle (this is considered most important and displayed first)
-        twitter_sauce = None
-        if isinstance(sauce, PixivSource):
-            twitter_sauce = self.pixiv.get_author_twitter(sauce.data['member_id'])
-            if twitter_sauce:
-                reply = lang('Results', 'twitter', {'twitter': twitter_sauce})
-                lines.append(ReplyLine(reply, newlines=1))
+        if twitter_sauce:
+            reply = lang('Results', 'twitter', {'twitter': twitter_sauce})
+            lines.append(ReplyLine(reply, newlines=1))
 
         # Print the author name if available
         if sauce.author_name:
