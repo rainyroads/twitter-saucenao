@@ -440,9 +440,7 @@ class TwitterSauce:
         if blocked:
             if twitter_sauce:
                 self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
-                message = f"""{twitter_sauce} This account has stolen your artwork and blocked me for crediting you. このアカウントはあなたの絵を盗んで、私があなたを明記したらブロックされちゃいました
-    https://github.com/FujiMakoto/twitter-saucenao/blob/master/DMCA.md
-    https://help.twitter.com/forms/dmca"""
+                message = lang('Errors', 'blocked_dmca', {'twitter_artist': twitter_sauce})
                 # noinspection PyUnboundLocalVariable
                 self._post(msg=message, to=comment.id)
 
