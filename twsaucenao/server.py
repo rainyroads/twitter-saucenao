@@ -396,7 +396,7 @@ class TwitterSauce:
         # Add the episode number and timestamp for video sources
         if isinstance(sauce, VideoSource):
             if sauce.episode:
-                reply = lang('Results', 'episode', {'episode': title})
+                reply = lang('Results', 'episode', {'episode': sauce.episode})
                 if sauce.timestamp:
                     reply += " " + lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
 
