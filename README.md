@@ -16,33 +16,6 @@ These accounts are currently monitored by saucenaopls on Twitter. If you’d lik
 * [@WaifuAesthetic](https://twitter.com/WaifuAesthetic) (Officially endorsed)
 * [@DDOAnime](https://twitter.com/DDOAnime) (Officially endorsed)
 
-## Art thieves SauceBot has been blocked by
-Unfortunately, despite my best efforts to keep the bot as unobtrusive and non-spammy as possible, some people on Twitter simply naturally hate the prospect of giving the original artists credit because they don't want to share the attention they receive.
-
-This post offers some insight into the mindsets of people like this,
-
-https://twitter.com/_kairy_draws_/status/1276653871448961028
-
-Here is a list of Twitter accounts that have blocked the official @saucenaopls bot for crediting artwork they've reposted.
-
-* @AnimeDeltaa (Blocked 08/03/2020) (NSFW)
-* @AnimeHentaiFans (Blocked 07/08/2020) (NSFW)
-* @LewdRealm (Re-blocked 07/28/2020) (NSFW)
-* @WaifuSupply (Re-blocked 07/28/2020)
-* @lfredohentai (Blocked 07/21/2020) (NSFW)
-* @PrincessKeriana (Blocked 07/08/2020) (NSFW)
-* @Yumi69x2 (Blocked 06/29/2020) (NSFW)
-* @love_image__H (Blocked 06/30/2020) (NSFW)
-* @Tomo_Yamanobe_ (Blocked 07/28/2020) (NSFW)
-* @DreaMGGAMING (Blocked 07/03/2020) (NSFW)
-* @iJaIter (Blocked 06/30/2020)
-
-You can still mention me in the comments of these posts and I can reply to you regardless, this list is compiled more for transparency reasons and to call out are thieves who do not provide acceptable credit for the artwork their accounts repost.
-
-**Additionally, please be aware that attempting to block SauceBot may result in the bot automatically contacting the original artists with DMCA takedown instructions for your posts.**
-
-Providing artists with credit is not something we believe should be considered optional. Furthermore, attempting to deny original artists credit is toxic behavior we believe should be combated. We will always work to provide original artists the credit they are entitled to. If you try and deny users the right to know the source of artwork you are reposting, we will name and shame you.
-
 # Documentation
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the example configuration file, [**config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**, then set the configuration variables accordingly.
 
