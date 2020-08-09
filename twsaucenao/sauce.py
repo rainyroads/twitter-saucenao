@@ -77,7 +77,9 @@ class SauceManager:
         video_preview = None
         if self._previews_enabled and isinstance(best_result, AnimeSource):
             await best_result.load_ids()
-            video_preview = await self._video_preview(best_result, io.BytesIO(file), not self._downloads_enabled)
+            file = io.BytesIO(file) if self._downloads_enabled else file
+            is_url = not self._downloads_enabled
+            video_preview = await self._video_preview(best_result, file, is_url)
 
         # If we have a video preview, upload it now!
         media_id = None
