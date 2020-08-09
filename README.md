@@ -74,14 +74,10 @@ Then add the following to your config.ini,
 api_key: YOUR_API_KEY_HERE
 ```
 
-### Monitoring accounts
-If you want to use the bot to monitor your own account(s) and provide the sauce of things you post automatically, you can use the **monitored_accounts** configuration variable.
+### Additional configuration
+Want to customize the bot further? Refer to the Configuration page in the Wiki for a detailed overview of the bots configuration settings!
 
-This is a comma-separated lists of accounts to monitor.
-
-**Keep in mind you cannot monitor the bots own account.** If you want to monitor an account you operate, you will need to set up a separate bot account.
-
-If you want to monitor another account on Twitter, please be sure someone else is not already actively doing the same. We don’t want to spam people with duplicate sauce lookups. Be courteous!
+https://github.com/FujiMakoto/twitter-saucenao/wiki/Configuration
 
 # Closing remarks
 That’s about it! I hope you have found this project useful. All the major credit really goes to the SauceNao website and service, which allows the bot to operate.
