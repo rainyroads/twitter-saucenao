@@ -39,7 +39,7 @@ You can still mention me in the comments of these posts and I can reply to you r
 
 **Additionally, please be aware that attempting to block SauceBot may result in the bot automatically contacting the original artists with DMCA takedown instructions for your posts.**
 
-Providing artists with credit is not something we believe should be considered optional. Furthermore, attempting to deny original artists credit is toxic behavior and we will act within our power to deplatform accounts which actively work to deny original artists the credit they are entitled to.
+Providing artists with credit is not something we believe should be considered optional. Furthermore, attempting to deny original artists credit is toxic behavior we believe should be combated. We will always work to provide original artists the credit they are entitled to. If you try and deny users the right to know the source of artwork you are reposting, we will name and shame you.
 
 # Documentation
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the example configuration file, [**config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**, then set the configuration variables accordingly.
