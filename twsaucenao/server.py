@@ -448,7 +448,7 @@ class TwitterSauce:
         # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
         if blocked:
             if twitter_sauce:
-                self.log.warning(f"Sending {twitter_sauce} DMCA takedown advice")
+                self.log.info(f"Sending {twitter_sauce} DMCA takedown advice")
                 message = lang('Errors', 'blocked_dmca', {'twitter_artist': twitter_sauce})
                 # noinspection PyUnboundLocalVariable
                 self._post(msg=message, to=comment.id)
@@ -498,7 +498,7 @@ class TwitterSauce:
                 return self._post(msg=msg, to=to, sensitive=sensitive)
             # Something unfamiliar happened, log an error for later review
             elif error.api_code == 186 and lines:
-                self.log.warning("Post is too long; scrubbing message length")
+                self.log.debug("Post is too long; scrubbing message length")
 
                 def _retry(_lines):
                     _lines = self._shorten_reply(_lines)
@@ -516,11 +516,11 @@ class TwitterSauce:
                     try:
                         success = _retry(lines)
                     except IndexError:
-                        self.log.error(f"Failed to shorten response message to tweet {to} enough")
+                        self.log.warning(f"Failed to shorten response message to tweet {to} enough")
                         break
 
                     if not success:
-                        self.log.warning(f"Tweet to {to} still not short enough; running another pass")
+                        self.log.debug(f"Tweet to {to} still not short enough; running another pass")
                         continue
 
                     self.log.debug(f"Tweet for {to} shortened successfully")
