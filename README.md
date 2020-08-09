@@ -93,9 +93,6 @@ Thank you so much to all of our supporters on [Patreon](https://www.patreon.com/
 #### Waifus / Husbandos ($15+)
 
 * Spina97
-* Nyaaa
-* Nyabe
-* TotallyArk
 
 #### Main Characters ($6)
 
@@ -112,9 +109,9 @@ Thank you so much to all of our supporters on [Patreon](https://www.patreon.com/
 * JL
 * Josiah Wolf
 * Justin Whang
-* MetalMallard
 * Migi
 * NeonTaeh
+* Nyabe
 * Russel
 * SUZUSHIIRO
 * Sergio Juarez
