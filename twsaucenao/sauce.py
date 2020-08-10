@@ -1,7 +1,6 @@
 import io
 import logging
 import typing
-from typing import *
 
 import aiohttp
 import twython
@@ -48,7 +47,7 @@ class SauceManager:
             self._sauce_cache[index] = await self._get_sauce(index)
             return self._sauce_cache[index]
 
-    async def _get_sauce(self, index: int) -> Optional[TweetSauceCache]:
+    async def _get_sauce(self, index: int) -> typing.Optional[TweetSauceCache]:
         cache = TweetSauceCache.fetch(self.tweet_cache.tweet_id, index)
         if cache:
             return cache
@@ -111,8 +110,8 @@ class SauceManager:
         except aiohttp.ClientError:
             self._log.exception("An error occurred while trying to download an image from Twitter")
 
-    async def _video_preview(self, sauce: AnimeSource, path_or_fh: Union[str, typing.BinaryIO],
-                             is_url: bool) -> Optional[bytes]:
+    async def _video_preview(self, sauce: AnimeSource, path_or_fh: typing.Union[str, typing.BinaryIO],
+                             is_url: bool) -> typing.Optional[bytes]:
         if not tracemoe:
             return None
 
@@ -137,7 +136,7 @@ class SauceManager:
 
         return None
 
-    async def _upload_video(self, media: io.BytesIO) -> Optional[int]:
+    async def _upload_video(self, media: io.BytesIO) -> typing.Optional[int]:
         """
         Upload a video to Twitter and return the media ID for embedding
         """
