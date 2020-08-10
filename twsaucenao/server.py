@@ -30,17 +30,7 @@ class TwitterSauce:
         self.twython = Twython(config.get('Twitter', 'consumer_key'), config.get('Twitter', 'consumer_secret'),
                                config.get('Twitter', 'access_token'), config.get('Twitter', 'access_secret'))
 
-        # SauceNao
-        self.minsim_mentioned = float(config.get('SauceNao', 'min_similarity_mentioned', fallback=50.0))
-        self.minsim_monitored = float(config.get('SauceNao', 'min_similarity_monitored', fallback=65.0))
-        self.minsim_searching = float(config.get('SauceNao', 'min_similarity_searching', fallback=70.0))
-        self.persistent = config.getboolean('Twitter', 'enable_persistence', fallback=False)
         self.anime_link = config.get('SauceNao', 'source_link', fallback='anidb').lower()
-        self.sauce = SauceNao(
-                api_key=config.get('SauceNao', 'api_key', fallback=None),
-                min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching),
-                priority=[21, 22, 5]
-        )
 
         # Trace.moe
         self.tracemoe = None  # type: typing.Optional[ATraceMoe]
