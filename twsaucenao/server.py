@@ -402,13 +402,12 @@ class TwitterSauce:
             lines.append(ReplyLine(reply, 10, newlines=1))
 
         # Add the episode number and timestamp for video sources
-        if isinstance(sauce, VideoSource):
-            if sauce.episode:
-                reply = lang('Results', 'episode', {'episode': sauce.episode})
-                if sauce.timestamp:
-                    reply += " " + lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
+        if isinstance(sauce, VideoSource) and sauce.episode:
+            reply = lang('Results', 'episode', {'episode': sauce.episode})
+            if sauce.timestamp:
+                reply += " " + lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
 
-                lines.append(ReplyLine(reply, 5, newlines=1))
+            lines.append(ReplyLine(reply, 5, newlines=1))
 
         # Add the chapter for manga sources
         if isinstance(sauce, MangaSource):
@@ -445,12 +444,11 @@ class TwitterSauce:
             comment = self._post(msg=lines, to=tweet.id)
 
         # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
-        if blocked:
-            if twitter_sauce:
-                self.log.info(f"Sending {twitter_sauce} DMCA takedown advice")
-                message = lang('Errors', 'blocked_dmca', {'twitter_artist': twitter_sauce})
-                # noinspection PyUnboundLocalVariable
-                self._post(msg=message, to=comment.id)
+        if blocked and twitter_sauce:
+            self.log.info(f"Sending {twitter_sauce} DMCA takedown advice")
+            message = lang('Errors', 'blocked_dmca', {'twitter_artist': twitter_sauce})
+            # noinspection PyUnboundLocalVariable
+            self._post(msg=message, to=comment.id)
 
     def _post(self, msg: typing.Union[str, typing.List[ReplyLine]], to: typing.Optional[int], media_ids: typing.Optional[typing.List[int]] = None,
               sensitive: bool = False):
