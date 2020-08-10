@@ -400,10 +400,9 @@ class TwitterSauce:
             lines.append(ReplyLine(reply, 5, newlines=1))
 
         # Add the chapter for manga sources
-        if isinstance(sauce, MangaSource):
-            if sauce.chapter:
-                reply = lang('Results', 'chapter', {'chapter': sauce.chapter})
-                lines.append(ReplyLine(reply, 5, newlines=1))
+        if isinstance(sauce, MangaSource) and sauce.chapter:
+            reply = lang('Results', 'chapter', {'chapter': sauce.chapter})
+            lines.append(ReplyLine(reply, 5, newlines=1))
 
         # Display our confidence rating
         lines.append(ReplyLine(similarity, 2, newlines=1))
