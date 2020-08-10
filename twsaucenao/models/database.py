@@ -3,7 +3,7 @@ import typing
 
 import pysaucenao
 import tweepy
-from pony.orm import *
+from pony.orm import commit, count, Database, delete, Json, Optional, PrimaryKey, Required, db_session
 from pysaucenao import GenericSource
 from pysaucenao.containers import SauceNaoResults
 

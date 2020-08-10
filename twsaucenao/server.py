@@ -1,10 +1,9 @@
 import asyncio
 import logging
 import reprlib
-from typing import *
+import typing
 
 import tweepy
-import twython
 from pysaucenao import AnimeSource, BooruSource, DailyLimitReachedException, MangaSource, PixivSource, SauceNao, \
     SauceNaoException, \
     ShortLimitReachedException, \
@@ -44,7 +43,7 @@ class TwitterSauce:
         )
 
         # Trace.moe
-        self.tracemoe = None  # type: Optional[ATraceMoe]
+        self.tracemoe = None  # type: typing.Optional[ATraceMoe]
         if config.getboolean('TraceMoe', 'enabled', fallback=False):
             self.tracemoe = ATraceMoe(config.get('TraceMoe', 'token', fallback=None))
 
@@ -221,7 +220,7 @@ class TwitterSauce:
                     self.log.exception(f"[{account}] An unknown error occurred while processing tweet {tweet.id}")
                     continue
 
-    async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: Optional[str] = None,
+    async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: typing.Optional[str] = None,
                         trigger: str = TRIGGER_MENTION) -> TweetSauceCache:
         """
         Get the sauce of a media tweet
@@ -245,7 +244,7 @@ class TwitterSauce:
             sauce_cache = TweetSauceCache.set(tweet_cache, index_no=index_no, trigger=trigger)
             return sauce_cache
 
-    def get_closest_media(self, tweet, log_index: Optional[str] = None) -> Optional[Tuple[TweetCache, TweetCache, List[str]]]:
+    def get_closest_media(self, tweet, log_index: typing.Optional[str] = None) -> typing.Optional[typing.Tuple[TweetCache, TweetCache, typing.List[str]]]:
         """
         Attempt to get the closest media element associated with this tweet and handle any errors if they occur
         Args:
@@ -453,14 +452,14 @@ class TwitterSauce:
                 # noinspection PyUnboundLocalVariable
                 self._post(msg=message, to=comment.id)
 
-    def _post(self, msg: Union[str, List[ReplyLine]], to: Optional[int], media_ids: Optional[List[int]] = None,
+    def _post(self, msg: typing.Union[str, typing.List[ReplyLine]], to: typing.Optional[int], media_ids: typing.Optional[typing.List[int]] = None,
               sensitive: bool = False):
         """
         Perform a twitter API status update
         Args:
             msg (Union[str, List[ReplyLine]]): Message to send
-            to (Optional[int]): Status ID we are replying to
-            media_ids (Optional[List[int]]): List of media ID's
+            to (typing.Optional[int]): Status ID we are replying to
+            media_ids (typing.Optional[List[int]]): List of media ID's
             sensitive (bool): Whether or not this tweet contains NSFW media
 
         Returns:
@@ -528,7 +527,7 @@ class TwitterSauce:
             else:
                 self.log.error(f"Unable to post due to an unknown Twitter error: {error.api_code} - {error.reason}")
 
-    def _shorten_reply(self, reply_lines: List[ReplyLine]):
+    def _shorten_reply(self, reply_lines: typing.List[ReplyLine]):
         """
         Dynamically shorten a response until it fits within Twitter's 240 character limit
         Args:
