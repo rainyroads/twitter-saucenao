@@ -337,15 +337,15 @@ class TwitterSauce:
                 sauce_urls.append(sauce.url)
 
         # For limiting the length of the title/author
-        repr = reprlib.Repr()
-        repr.maxstring = 32
+        _repr = reprlib.Repr()
+        _repr.maxstring = 32
 
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
         if sauce.index not in ['H-Misc', 'E-Hentai']:
-            title = repr.repr(sauce.title).strip("'")
+            title = _repr.repr(sauce.title).strip("'")
         else:
-            repr.maxstring = 128
-            title = repr.repr(sauce.title).strip("'")
+            _repr.maxstring = 128
+            title = _repr.repr(sauce.title).strip("'")
 
         # Format the similarity string
         similarity = lang('Accuracy', 'prefix', {'similarity': sauce.similarity})
@@ -382,7 +382,7 @@ class TwitterSauce:
 
         # Print the author name if available
         if sauce.author_name:
-            author = repr.repr(sauce.author_name).strip("'")
+            author = _repr.repr(sauce.author_name).strip("'")
             reply = lang('Results', 'author', {'author': author})
             lines.append(ReplyLine(reply, newlines=1))
 
