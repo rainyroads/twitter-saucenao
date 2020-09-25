@@ -408,11 +408,12 @@ class TwitterSauce:
         lines.append(ReplyLine(similarity, 2, newlines=1))
 
         # Source URL's are not available in some indexes
-        if sauce_urls:
-            reply = "\n".join(sauce_urls)
-            lines.append(ReplyLine(reply, newlines=2))
-        elif sauce.source_url:
-            lines.append(ReplyLine(sauce.source_url, newlines=2))
+        if sauce.index not in ['H-Misc', 'H-Anime', 'H-Magazines', 'H-Game CG']:
+            if sauce_urls:
+                reply = "\n".join(sauce_urls)
+                lines.append(ReplyLine(reply, newlines=2))
+            elif sauce.source_url:
+                lines.append(ReplyLine(sauce.source_url, newlines=2))
 
         # Some Booru posts have bad source links cited, so we should always provide a Booru link with the source URL
         if isinstance(sauce, BooruSource) and sauce.source_url != sauce.url:
