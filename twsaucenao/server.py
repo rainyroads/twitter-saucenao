@@ -39,6 +39,7 @@ class TwitterSauce:
 
         self.nsfw_previews = config.getboolean('TraceMoe', 'nsfw_previews', fallback=False)
         self.failed_responses = config.getboolean('SauceNao', 'respond_to_failed', fallback=True)
+        self.ignored_indexes = [int(i) for i in config.get('SauceNao', 'ignored_indexes', default='').split(',')]
 
         # Pixiv
         self.pixiv = Pixiv()
@@ -291,6 +292,11 @@ class TwitterSauce:
         """
         tweet = tweet_cache.tweet
         sauce = sauce_cache.sauce
+
+        if sauce and self.ignored_indexes:
+            if int(sauce.index_id) in self.ignored_indexes:
+                self._log.info(f"Ignoring result from ignored index ID {sauce.index_id}")
+                sauce = None
 
         if sauce is None and self.failed_responses:
             if requested:
