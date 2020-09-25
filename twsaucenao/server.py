@@ -39,7 +39,7 @@ class TwitterSauce:
 
         self.nsfw_previews = config.getboolean('TraceMoe', 'nsfw_previews', fallback=False)
         self.failed_responses = config.getboolean('SauceNao', 'respond_to_failed', fallback=True)
-        self.ignored_indexes = [int(i) for i in config.get('SauceNao', 'ignored_indexes', default='').split(',')]
+        self.ignored_indexes = [int(i) for i in config.get('SauceNao', 'ignored_indexes', fallback='').split(',')]
 
         # Pixiv
         self.pixiv = Pixiv()
