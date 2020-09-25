@@ -38,6 +38,7 @@ class TwitterSauce:
             self.tracemoe = ATraceMoe(config.get('TraceMoe', 'token', fallback=None))
 
         self.nsfw_previews = config.getboolean('TraceMoe', 'nsfw_previews', fallback=False)
+        self.failed_responses = config.getboolean('SauceNao', 'respond_to_failed', fallback=True)
 
         # Pixiv
         self.pixiv = Pixiv()
@@ -291,7 +292,7 @@ class TwitterSauce:
         tweet = tweet_cache.tweet
         sauce = sauce_cache.sauce
 
-        if sauce is None:
+        if sauce is None and self.failed_responses:
             if requested:
                 media = TweetManager.extract_media(media_cache.tweet)
                 if not media:
