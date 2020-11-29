@@ -95,8 +95,8 @@ class TwitterSauce:
             except TwSauceNoMediaException:
                 self.log.debug(f"[{self.my.screen_name}] Tweet {tweet.id} has no media to process, ignoring")
                 continue
-            except Exception:
-                self.log.exception(f"[{self.my.screen_name}] An unknown error occurred while processing tweet {tweet.id}")
+            except Exception as e:
+                self.log.exception(f"[{self.my.screen_name}] An unknown error occurred while processing tweet {tweet.id}: {e}")
                 continue
 
     # noinspection PyBroadException
@@ -202,8 +202,8 @@ class TwitterSauce:
                 except TwSauceNoMediaException:
                     self.log.info(f"[{account}] No sauce found for tweet {tweet.id}")
                     continue
-                except Exception:
-                    self.log.exception(f"[{account}] An unknown error occurred while processing tweet {tweet.id}")
+                except Exception as e:
+                    self.log.exception(f"[{account}] An unknown error occurred while processing tweet {tweet.id}: {e}")
                     continue
 
     async def get_sauce(self, tweet_cache: TweetCache, index_no: int = 0, log_index: typing.Optional[str] = None,
