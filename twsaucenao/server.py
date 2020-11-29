@@ -337,6 +337,15 @@ class TwitterSauce:
             if self.anime_link in ['anidb', 'all']:
                 sauce_urls.append(sauce.url)
 
+        # Only add Twitter source URL's for booru's, otherwise we may link to something that angers the Twitter gods
+        if isinstance(sauce, BooruSource):
+            for url in sauce.urls:
+                if 'twitter.com' in url:
+                    sauce_urls.append(url)
+
+            if 'twitter.com' in sauce.source_url:
+                sauce_urls.append(sauce.source_url)
+
         # For limiting the length of the title/author
         _repr = reprlib.Repr()
         _repr.maxstring = 32
@@ -423,12 +432,8 @@ class TwitterSauce:
             if sauce_urls:
                 reply = "\n".join(sauce_urls)
                 lines.append(ReplyLine(reply, newlines=2))
-            elif sauce.source_url:
+            elif sauce.source_url and not isinstance(sauce, BooruSource):
                 lines.append(ReplyLine(sauce.source_url, newlines=2))
-
-        # Some Booru posts have bad source links cited, so we should always provide a Booru link with the source URL
-        if isinstance(sauce, BooruSource) and sauce.source_url != sauce.url:
-            lines.append(ReplyLine(sauce.url, 2, newlines=1))
 
         # Try and append bot instructions with monitored posts. This might make our post too long, though.
         if not requested:
