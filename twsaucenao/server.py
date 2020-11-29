@@ -305,11 +305,11 @@ class TwitterSauce:
                     return
 
                 yandex_url  = f"https://yandex.com/images/search?url={media[sauce_cache.index_no]}&rpt=imageview"
-                tinyeye_url = f"https://www.tineye.com/search?url={media[sauce_cache.index_no]}"
+                ascii_url   = f"https://ascii2d.net/search/url/{media[sauce_cache.index_no]}"
                 google_url  = f"https://www.google.com/searchbyimage?image_url={media[sauce_cache.index_no]}&safe=off"
 
                 message = lang('Errors', 'no_results',
-                               {'yandex_url': yandex_url, 'tinyeye_url': tinyeye_url, 'google_url': google_url},
+                               {'yandex_url': yandex_url, 'ascii_url': ascii_url, 'google_url': google_url},
                                user=tweet.author)
                 self._post(msg=message, to=tweet.id)
             return
