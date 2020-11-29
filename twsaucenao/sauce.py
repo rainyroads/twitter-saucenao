@@ -31,7 +31,7 @@ class SauceManager:
         self.sauce = SauceNao(
                 api_key=config.get('SauceNao', 'api_key', fallback=None),
                 min_similarity=min(self.minsim_mentioned, self.minsim_monitored, self.minsim_searching),
-                priority=[21, 22, 5]
+                priority=[21, 22, 5, 37, 25]
         )
 
         # Twython
