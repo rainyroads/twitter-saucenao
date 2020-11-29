@@ -17,7 +17,6 @@ from twsaucenao.lang import lang
 from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
 from twsaucenao.sauce import SauceManager
-from twsaucenao.tracemoe import ATraceMoe
 from twsaucenao.twitter import ReplyLine, TweetManager
 
 
@@ -31,11 +30,6 @@ class TwitterSauce:
                                config.get('Twitter', 'access_token'), config.get('Twitter', 'access_secret'))
 
         self.anime_link = config.get('SauceNao', 'source_link', fallback='anidb').lower()
-
-        # Trace.moe
-        self.tracemoe = None  # type: typing.Optional[ATraceMoe]
-        if config.getboolean('TraceMoe', 'enabled', fallback=False):
-            self.tracemoe = ATraceMoe(config.get('TraceMoe', 'token', fallback=None))
 
         self.nsfw_previews = config.getboolean('TraceMoe', 'nsfw_previews', fallback=False)
         self.failed_responses = config.getboolean('SauceNao', 'respond_to_failed', fallback=True)

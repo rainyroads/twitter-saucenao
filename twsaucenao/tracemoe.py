@@ -8,6 +8,8 @@ from json import loads
 from aiohttp import ClientSession
 from PIL import Image
 
+from twsaucenao.config import config
+
 
 class ATraceMoe:
 
@@ -162,3 +164,6 @@ class ATraceMoe:
                 url, json={"image": encoded, "filter": search_filter}
             )
             return loads(await response.text())
+
+
+tracemoe = ATraceMoe(config.get('TraceMoe', 'token', fallback=None))
