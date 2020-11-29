@@ -277,7 +277,7 @@ class TwitterSauce:
         Args:
             tweet_cache (TweetCache): The tweet to reply to
             media_cache (TweetCache): The tweet containing media elements
-            sauce_cache (TweetSauceCache): The sauce found (or None if nothing was found)
+            sauce_cache (Optional[GenericSource]): The sauce found (or None if nothing was found)
             requested (bool): True if the lookup was requested, or False if this is a monitored user account
             blocked (bool): If True, the account posting this has blocked the SauceBot
 
@@ -409,13 +409,14 @@ class TwitterSauce:
             lines.append(ReplyLine(reply, 5, newlines=1))
 
         # Add character and material info for booru results
-        if isinstance(sauce, BooruSource) and sauce.material:
-            reply = lang('Results', 'material', {'material': sauce.material[0].title()})
-            lines.append(ReplyLine(reply, 5, newlines=1))
+        if isinstance(sauce, BooruSource):
+            if sauce.material:
+                reply = lang('Results', 'material', {'material': sauce.material[0].title()})
+                lines.append(ReplyLine(reply, 5, newlines=1))
 
-        if sauce_cache.character:
-            reply = lang('Results', 'character', {'character': sauce_cache.character})
-            lines.append(ReplyLine(reply, 4, newlines=1))
+            if sauce.characters:
+                reply = lang('Results', 'character', {'character': sauce.characters[0].title()})
+                lines.append(ReplyLine(reply, 4, newlines=1))
 
         # Add the chapter for manga sources
         if isinstance(sauce, MangaSource) and sauce.chapter:
