@@ -8,7 +8,6 @@ from pysaucenao import AnimeSource, BooruSource, DailyLimitReachedException, Man
     SauceNaoException, \
     ShortLimitReachedException, \
     VideoSource
-from tracemoe import ATraceMoe
 from twython import Twython
 
 from twsaucenao.api import api
@@ -18,6 +17,7 @@ from twsaucenao.lang import lang
 from twsaucenao.models.database import TRIGGER_MENTION, TRIGGER_MONITORED, TweetCache, TweetSauceCache
 from twsaucenao.pixiv import Pixiv
 from twsaucenao.sauce import SauceManager
+from twsaucenao.tracemoe import ATraceMoe
 from twsaucenao.twitter import ReplyLine, TweetManager
 
 
