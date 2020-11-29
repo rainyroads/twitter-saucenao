@@ -419,7 +419,7 @@ class TwitterSauce:
         lines.append(ReplyLine(similarity, 2, newlines=1))
 
         # Source URL's are not available in some indexes
-        if sauce.index not in ['H-Misc', 'H-Anime', 'H-Magazines', 'H-Game CG']:
+        if sauce.index not in ['H-Misc', 'H-Anime', 'H-Magazines', 'H-Game CG', 'Gelbooru', 'Danbooru', 'Konachan', 'Sankaku Channel', 'e621.net']:
             if sauce_urls:
                 reply = "\n".join(sauce_urls)
                 lines.append(ReplyLine(reply, newlines=2))
