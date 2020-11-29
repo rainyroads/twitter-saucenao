@@ -108,7 +108,7 @@ class TweetSauceCache(db.Entity):
     sauce_data      = Optional(Json)
     sauce_class     = Optional(str, 255)
     sauce_index     = Optional(str, 255)
-    character       = Optional(str, 1024, nullable=True)
+    _character      = Optional(str, 1024, nullable=True, column='character')
     media_id        = Optional(int, size=64)
     trigger         = Optional(str, 50)
     created_at      = Required(int, size=64, index=True)
@@ -138,6 +138,10 @@ class TweetSauceCache(db.Entity):
                 return None
 
         return sauce
+
+    @property
+    def character(self) -> typing.Optional[str]:
+        return self._character
 
     @staticmethod
     @db_session
