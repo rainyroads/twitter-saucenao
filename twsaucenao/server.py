@@ -287,13 +287,12 @@ class TwitterSauce:
         tweet = tweet_cache.tweet
         sauce = sauce_cache.sauce
 
-        if sauce and self.ignored_indexes:
-            if int(sauce.index_id) in self.ignored_indexes:
-                self._log.info(f"Ignoring result from ignored index ID {sauce.index_id}")
-                sauce = None
+        if sauce and self.ignored_indexes and (int(sauce.index_id) in self.ignored_indexes):
+            self.log.info(f"Ignoring result from ignored index ID {sauce.index_id}")
+            sauce = None
 
-        if sauce is None and self.failed_responses:
-            if requested:
+        if sauce is None:
+            if self.failed_responses and requested:
                 media = TweetManager.extract_media(media_cache.tweet)
                 if not media:
                     return
