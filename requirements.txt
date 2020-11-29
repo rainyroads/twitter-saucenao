@@ -1,7 +1,7 @@
-pysaucenao ~= 1.4.0
+pysaucenao~=1.5.0
 tweepy~=3.9.0
-pixivpy
-pony~=0.7.13
-aiohttp~=3.6.2
+pixivpy~=3.5.10
+pony~=0.7.14
+aiohttp~=3.7.3
 git+git://github.com/FujiMakoto/tracemoe.git#egg=tracemoe
 twython~=3.8.2
