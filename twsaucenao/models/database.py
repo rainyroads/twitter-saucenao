@@ -108,7 +108,7 @@ class TweetSauceCache(db.Entity):
     sauce_data      = Optional(Json)
     sauce_class     = Optional(str, 255)
     sauce_index     = Optional(str, 255)
-    character       = Optional(str)
+    character       = Optional(str, 1024, nullable=True)
     media_id        = Optional(int, size=64)
     trigger         = Optional(str, 50)
     created_at      = Required(int, size=64, index=True)
