@@ -129,7 +129,7 @@ class TweetSauceCache(db.Entity):
         now = int(time.time())
         cutoff_ts = 0 if not cutoff else (now - cutoff)
 
-        sauce = TweetSauceCache.get(tweet_id=tweet_id, index_no=index_no)
+        sauce = TweetSauceCache.get(tweet_id=tweet_id, index_no=index_no).prefetch(TweetSauceCache.character)
         if sauce:
             log.debug(f'[SYSTEM] Sauce cache hit on index {index_no} for tweet {tweet_id}')
 
