@@ -4,7 +4,7 @@ import reprlib
 import typing
 
 import tweepy
-from pysaucenao import AnimeSource, BooruSource, DailyLimitReachedException, MangaSource, PixivSource, SauceNao, \
+from pysaucenao import AnimeSource, BooruSource, DailyLimitReachedException, MangaSource, PixivSource, \
     SauceNaoException, \
     ShortLimitReachedException, \
     VideoSource
@@ -405,6 +405,16 @@ class TwitterSauce:
                 reply += " " + lang('Results', 'timestamp', {'timestamp': sauce.timestamp})
 
             lines.append(ReplyLine(reply, 5, newlines=1))
+
+        # Add character and material info for booru results
+        if isinstance(sauce, BooruSource):
+            if sauce.material:
+                reply = lang('Results', 'material', {'material': sauce.material[0].title()})
+                lines.append(ReplyLine(reply, 5, newlines=1))
+
+            if sauce.characters:
+                reply = lang('Results', 'character', {'character': sauce.characters[0].title()})
+                lines.append(ReplyLine(reply, 4, newlines=1))
 
         # Add the chapter for manga sources
         if isinstance(sauce, MangaSource) and sauce.chapter:
