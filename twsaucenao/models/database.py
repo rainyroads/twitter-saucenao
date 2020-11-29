@@ -3,7 +3,7 @@ import typing
 
 import pysaucenao
 import tweepy
-from pony.orm import commit, count, Database, db_session, delete, Json, Optional, PrimaryKey, Required, select
+from pony.orm import commit, count, Database, db_session, delete, Json, Optional, PrimaryKey, Required
 from pysaucenao import GenericSource
 from pysaucenao.containers import BooruSource, SauceNaoResults
 
@@ -129,7 +129,7 @@ class TweetSauceCache(db.Entity):
         now = int(time.time())
         cutoff_ts = 0 if not cutoff else (now - cutoff)
 
-        sauce = select(t for t in TweetSauceCache if (TweetSauceCache.tweet_id == tweet_id) and (TweetSauceCache.index_no == index_no)).prefetch(TweetSauceCache.character).first()
+        sauce = TweetSauceCache.get(tweet_id=tweet_id, index_no=index_no).prefetch(TweetSauceCache.character)
         if sauce:
             log.debug(f'[SYSTEM] Sauce cache hit on index {index_no} for tweet {tweet_id}')
 
