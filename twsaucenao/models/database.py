@@ -3,9 +3,9 @@ import typing
 
 import pysaucenao
 import tweepy
-from pony.orm import commit, count, Database, delete, Json, Optional, PrimaryKey, Required, db_session
+from pony.orm import commit, count, Database, db_session, delete, Json, Optional, PrimaryKey, Required
 from pysaucenao import GenericSource
-from pysaucenao.containers import SauceNaoResults
+from pysaucenao.containers import BooruSource, SauceNaoResults
 
 from twsaucenao.api import api
 from twsaucenao.config import config
@@ -108,6 +108,7 @@ class TweetSauceCache(db.Entity):
     sauce_data      = Optional(Json)
     sauce_class     = Optional(str, 255)
     sauce_index     = Optional(str, 255)
+    character       = Optional(str)
     media_id        = Optional(int, size=64)
     trigger         = Optional(str, 50)
     created_at      = Required(int, size=64, index=True)
@@ -185,6 +186,15 @@ class TweetSauceCache(db.Entity):
             log.debug(f"[SYSTEM] Sauce potentially found for tweet {tweet.tweet_id}, but it didn't meet the minimum {trigger} similarity requirements")
             return no_results()
 
+        # Get the character from Booru results if available
+        character = None
+        for result in sauce_results.results:
+            if (result.similarity < similarity_cutoff):
+                continue
+
+            if isinstance(result, BooruSource) and result.characters:
+                character = result.characters[0].title()
+
         log.info(f'[SYSTEM] Caching a successful sauce lookup query for tweet {tweet.tweet_id} on indice {index_no}')
         cache = TweetSauceCache(
                 tweet_id=tweet.tweet_id,
@@ -193,6 +203,7 @@ class TweetSauceCache(db.Entity):
                 sauce_data=sauce.data,
                 sauce_class=type(sauce).__name__,
                 sauce_index=sauce.index,
+                character=character,
                 trigger=trigger,
                 media_id=media_id or 0,
                 created_at=int(time.time())
