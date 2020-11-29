@@ -207,7 +207,7 @@ class TweetSauceCache(db.Entity):
                 sauce_data=sauce.data,
                 sauce_class=type(sauce).__name__,
                 sauce_index=sauce.index,
-                character=character,
+                _character=character,
                 trigger=trigger,
                 media_id=media_id or 0,
                 created_at=int(time.time())
