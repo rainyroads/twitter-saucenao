@@ -327,11 +327,11 @@ class TwitterSauce:
         if isinstance(sauce, AnimeSource):
             await sauce.load_ids()
 
-            if self.anime_link in ['anilist', 'animal', 'all'] and sauce.anilist_url:
-                sauce_urls.append(sauce.anilist_url)
-
             if self.anime_link in ['myanimelist', 'animal', 'all'] and sauce.mal_url:
                 sauce_urls.append(sauce.mal_url)
+
+            if self.anime_link in ['anilist', 'animal', 'all'] and sauce.anilist_url:
+                sauce_urls.append(sauce.anilist_url)
 
             if self.anime_link in ['anidb', 'all']:
                 sauce_urls.append(sauce.url)
