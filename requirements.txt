@@ -4,4 +4,4 @@ pixivpy~=3.5.10
 pony~=0.7.14
 aiohttp~=3.7.3
 twython~=3.8.2
-Pillow~=8.0.1
+Pillow~=8.1.1
