@@ -42,10 +42,6 @@ class TwitterSauce:
         self.my = api.me()
         self.log.info(f"Connected as: {self.my.screen_name}")
 
-        # Image URL's are md5 hashed and cached here to prevent duplicate API queries. This is cleared every 24-hours.
-        # I'll update this in the future to use a real caching mechanism (database or redis)
-        self._cached_results = {}
-
         # A cached list of ID's for parent posts we've already processed
         # Used in the check_monitored() method to prevent re-posting sauces when posts are re-tweeted
         self._posts_processed = []
