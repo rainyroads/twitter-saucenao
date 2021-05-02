@@ -4,6 +4,7 @@ import typing
 
 import aiohttp
 import twython
+from aiohttp import ClientResponseError
 from pysaucenao import AnimeSource, SauceNao
 from twython import Twython
 
@@ -117,8 +118,14 @@ class SauceManager:
 
         try:
             tracemoe_sauce = await tracemoe.search(path_or_fh, is_url=is_url)
+        except ClientResponseError as e:
+            if e.status == 503:
+                self._log.warning("Tracemoe is not accepting API queries right now; aborting search query")
+            else:
+                self._log.exception("Tracemoe returned an unknown status code when executing this search query")
+            return None
         except Exception:
-            self._log.exception("Tracemoe returned an exception, aborting search query")
+            self._log.exception("Tracemoe returned an exception; aborting search query")
             return None
         if not tracemoe_sauce.get('docs'):
             self._log.info("Tracemoe returned no results")
