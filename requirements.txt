@@ -1,7 +1,8 @@
 pysaucenao~=1.5.0
 tweepy~=3.9.0
-pixivpy~=3.5.10
+pixivpy~=3.5.11
 pony~=0.7.14
 aiohttp~=3.7.3
 twython~=3.8.2
 Pillow~=8.1.1
+sentry-sdk~=1.0.0
