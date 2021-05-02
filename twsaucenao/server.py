@@ -435,7 +435,7 @@ class TwitterSauce:
             promo_footer = lang('Results', 'other_footer')
             if promo_footer:
                 lines.append(ReplyLine(promo_footer, 0, newlines=2))
-        elif config.get('System', 'display_patreon'):
+        elif config.getboolean('System', 'display_patreon'):
             lines.append(ReplyLine("Support SauceBot!\nhttps://www.patreon.com/saucebot", 3, newlines=2))
 
         # trace.moe time! Let's get a video preview
