@@ -10,8 +10,7 @@ from twsaucenao.config import config
 class Pixiv:
     def __init__(self):
         self.enabled  = config.getboolean('Pixiv', 'enabled', fallback=False)
-        self.username = config.get('Pixiv', 'username', fallback=None)
-        self._password = config.get('Pixiv', 'password', fallback=None)
+        self._refresh_token = config.get('Pixiv', 'refresh_token', fallback=None)
         self._log = logging.getLogger(__name__)
 
         self._pixiv = AppPixivAPI()
@@ -28,9 +27,9 @@ class Pixiv:
         Returns:
             None
         """
-        self._log.info(f'[PIXIV] Authenticating to Pixiv with the username {self.username}')
+        self._log.debug(f'[PIXIV] Authenticating to Pixiv with the token {self._refresh_token}')
         try:
-            self._pixiv.login(self.username, self._password)
+            self._pixiv.auth(refresh_token=self._refresh_token)
         except Exception as error:
             self._log.exception("[PIXIV] Failed to authenticate to Pixiv", exc_info=error)
 
