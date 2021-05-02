@@ -47,7 +47,7 @@ class Pixiv:
 
         illust = self._pixiv.illust_detail(illust_id)
         if 'error' in illust and 'invalid_grant' in illust['error']['message']:
-            self._log.info(f'Re-Authenticating to Pixiv with the username {self.username}')
+            self._log.warning(f'Pixiv login session is no longer valid; re-authenticating with saved token')
             self._login()
             illust = self._pixiv.illust_detail(illust_id)
 
