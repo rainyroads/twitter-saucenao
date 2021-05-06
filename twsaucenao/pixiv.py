@@ -67,7 +67,7 @@ class Pixiv:
 
         user = self._pixiv.user_detail(author_id)
         if 'error' in user and 'invalid_grant' in user['error']['message']:
-            self._log.info(f'Re-Authenticating to Pixiv with the username {self.username}')
+            self._log.info(f'Re-Authenticating to Pixiv with the saved refresh token')
             self._login()
             user = self._pixiv.user_detail(author_id)
 
