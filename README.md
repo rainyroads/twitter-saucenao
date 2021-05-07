@@ -38,7 +38,7 @@ allows the bot to operate.
 
 ![Sentry](./sentry.svg)
 
-We happily utilize Sentry for all out production error logging and debugging needs as
+We happily utilize Sentry for all our production error logging and debugging needs as
 a [sponsored](https://sentry.io/for/good/) open-source project!
 
 ### Patreons
