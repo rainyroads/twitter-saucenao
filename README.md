@@ -9,7 +9,11 @@ https://saucenao.com/
 
 # Official @saucenaopls account
 
-The official account for this Twitter bot can be found here: [@SauceNaoPls](https://twitter.com/saucenaopls)
+~~The official account for this Twitter bot can be found here: [@SauceNaoPls](https://twitter.com/saucenaopls)~~
+
+## Update (05/11/2021) @saucenaopls has been shadowbanned by Twitter
+
+https://twitter.com/saucenaopls/status/1392138133735620608
 
 # Documentation
 
