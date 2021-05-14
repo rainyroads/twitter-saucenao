@@ -301,6 +301,15 @@ class TwitterSauce:
                                {'yandex_url': yandex_url, 'ascii_url': ascii_url, 'google_url': google_url},
                                user=tweet.author)
                 self._post(msg=message, to=tweet.id)
+
+                # Shadowbans
+                self._post(msg=f"@saucenaopls is currently being harassed by @TwitterSupport with shadowbans.\n"
+                               f"\n"
+                               f"For more information, please see the following tweet/tweet archive:\n"
+                               f"https://twitter.com/saucenaopls/status/1392138133735620608\n"
+                               f"https://archive.is/koEIR\n"
+                               f"\n"
+                               f"Bot functionality may be limited while this is ongoing.", to=tweet.id)
             return
 
         # Get the artists Twitter handle if possible
@@ -452,6 +461,15 @@ class TwitterSauce:
             message = lang('Errors', 'blocked_dmca', {'twitter_artist': twitter_sauce})
             # noinspection PyUnboundLocalVariable
             self._post(msg=message, to=comment.id)
+
+        # Shadowbans
+        self._post(msg=f"@saucenaopls is currently being harassed by @TwitterSupport with shadowbans.\n"
+                       f"\n"
+                       f"For more information, please see the following tweet/tweet archive:\n"
+                       f"https://twitter.com/saucenaopls/status/1392138133735620608\n"
+                       f"https://archive.is/koEIR\n"
+                       f"\n"
+                       f"Bot functionality may be limited while this is ongoing.", to=tweet.id)
 
     def _post(self, msg: typing.Union[str, typing.List[ReplyLine]], to: typing.Optional[int], media_ids: typing.Optional[typing.List[int]] = None,
               sensitive: bool = False):
