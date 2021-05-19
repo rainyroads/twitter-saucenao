@@ -15,23 +15,23 @@ The official account for this Twitter bot can be found here: [@SauceNaoPls](http
 
 Twitter has recently engaged in shadowbanning the SauceNaoPls account in response to us actively working to expose Twitter's broken and abusive copyright system.
 
-Rather than deal with the rampant abuse of their broken and outsourced copyright system, Twitter has decided it’s easier
-to silently censor the one bot on the platform that tries to credit artists.
+It seems rather than deal with the rampant abuse, Twitter has decided it’s easier to silently censor the one bot on the platform that tries to credit artists.
 
-At the moment, many legitimate artist accounts are being closed because of false/malicious copyright complaints by bad
-actors attempting to blackmail these people into paying them to regain access to their account.
+At the moment, many legitimate artist accounts are being closed because of false/malicious copyright complaints by bad actors attempting to blackmail these people into paying them to regain access to their account.
 
 Examples:
 
 * https://twitter.com/yueko___/status/1391474502186377217
 * https://twitter.com/RyaiArt/status/1364745241350316032
 * https://twitter.com/JackaryDraws/status/1390374876205174789
+* https://twitter.com/orangesekai1/status/1394725794413387777
 
 Archives:
 
 * https://archive.is/0WkQf
 * https://archive.is/9p6Jq
 * https://archive.is/jQIQm
+* https://archive.is/ridon
 
 Legitimate artist accounts are being closed with only a handful of false DMCA complaints being filed against them.
 
