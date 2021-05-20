@@ -346,7 +346,7 @@ class TwitterSauce:
         _repr.maxstring = 32
 
         # H-Misc doesn't have a source to link to, so we need to try and provide the full title
-        if sauce.index not in ['H-Misc', 'E-Hentai', 'H-Anime']:
+        if sauce.index not in ['H-Misc', 'E-Hentai', 'H-Anime', 'Mangadex']:
             title = _repr.repr(sauce.title).strip("'")
         else:
             _repr.maxstring = 128
@@ -423,7 +423,7 @@ class TwitterSauce:
         lines.append(ReplyLine(similarity, 2, newlines=1))
 
         # Source URL's are not available in some indexes
-        if sauce.index not in ['H-Misc', 'H-Anime', 'H-Magazines', 'H-Game CG', 'Mangadex']:
+        if sauce.index not in ['H-Misc', 'H-Anime', 'H-Magazines', 'H-Game CG', 'Mangadex', 'E-Hentai']:
             if sauce_urls:
                 reply = "\n".join(sauce_urls)
                 lines.append(ReplyLine(reply, newlines=2))
