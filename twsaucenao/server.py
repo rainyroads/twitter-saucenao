@@ -438,20 +438,11 @@ class TwitterSauce:
         elif config.getboolean('System', 'display_patreon'):
             lines.append(ReplyLine("Support SauceBot!\nhttps://www.patreon.com/saucebot", 3, newlines=2))
 
-        # trace.moe time! Let's get a video preview
+        # trace.moe time! Let's get a video preview if we can
         if sauce_cache.media_id:
-            comment = self._post(msg=lines, to=tweet.id, media_ids=[sauce_cache.media_id])
-
-        # This was hentai and we want to avoid uploading hentai clips to this account
+            self._post(msg=lines, to=tweet.id, media_ids=[sauce_cache.media_id])
         else:
-            comment = self._post(msg=lines, to=tweet.id)
-
-        # If we've been blocked by this user and have the artists Twitter handle, send the artist a DMCA guide
-        if blocked and twitter_sauce:
-            self.log.info(f"Sending {twitter_sauce} DMCA takedown advice")
-            message = lang('Errors', 'blocked_dmca', {'twitter_artist': twitter_sauce})
-            # noinspection PyUnboundLocalVariable
-            self._post(msg=message, to=comment.id)
+            self._post(msg=lines, to=tweet.id)
 
     def _post(self, msg: typing.Union[str, typing.List[ReplyLine]], to: typing.Optional[int], media_ids: typing.Optional[typing.List[int]] = None,
               sensitive: bool = False):
