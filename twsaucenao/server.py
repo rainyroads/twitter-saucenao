@@ -597,4 +597,8 @@ class TwitterSauce:
             self.log.debug("User explicitly requested index 3")
             return 3
 
+        # Try the last image on 3-image tweets, as the first one is often vertically cropped and not usable
+        if len(media) == 3:
+            return 2
+
         return 0
