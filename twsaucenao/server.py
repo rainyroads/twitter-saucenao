@@ -431,7 +431,7 @@ class TwitterSauce:
                 lines.append(ReplyLine(sauce.source_url, newlines=2))
 
         # Try and append bot instructions with monitored posts. This might make our post too long, though.
-        if not requested:
+        if not requested and config.getboolean('Twitter', 'promo_footer', fallback=False):
             promo_footer = lang('Results', 'other_footer')
             if promo_footer:
                 lines.append(ReplyLine(promo_footer, 0, newlines=2))
