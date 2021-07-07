@@ -2,14 +2,14 @@
 
 # twitter-saucenao
 
-[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/fujimakoto/twitter-saucenao/latest)](https://github.com/FujiMakoto/twitter-saucenao/releases) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=ncloc)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b544d5da65234268a434f05797bc5680)](https://www.codacy.com/manual/makoto-github/twitter-saucenao?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FujiMakoto/twitter-saucenao&amp;utm_campaign=Badge_Grade) [![Twitter Follow](https://img.shields.io/twitter/follow/saucenaopls)](https://twitter.com/saucenaopls)
+[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/fujimakoto/twitter-saucenao/latest)](https://github.com/FujiMakoto/twitter-saucenao/releases) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=ncloc)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b544d5da65234268a434f05797bc5680)](https://www.codacy.com/manual/makoto-github/twitter-saucenao?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FujiMakoto/twitter-saucenao&amp;utm_campaign=Badge_Grade)
 
 An open-source Twitter bot that utilizes the SauceNao API to find the source of images or anime screencaps.
 https://saucenao.com/
 
-# Official @saucenaopls account
+# Official Twitter account
 
-The official account for this Twitter bot can be found here: [@SauceNaoPls](https://twitter.com/saucenaopls)
+Support for the official saucenaopls Twitter account has been discontinued. Twitter in general is a horrible platform and additionally provides no way to scale bots that need more than 2,400 tweets/day. I've tried to work around this repeatedly to no avail. Working on this bot has additionally netted me almost nothing but constant harassment, so I'm no longer interested in maintaining the public-facing Twitter bot.
 
 ## (05/11/2021) Shadowbans and DMCA abuse
 
