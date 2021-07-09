@@ -2,7 +2,7 @@
 
 # twitter-saucenao
 
-![GitHub contributors](https://img.shields.io/github/contributors/fujimakoto/twitter-saucenao) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=ncloc)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) ![GitHub contributors](https://img.shields.io/github/contributors/fujimakoto/twitter-saucenao) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=ncloc)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Support me on Patreon](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3Dsaucebot%26type%3Dpledges&style=flat)](https://patreon.com/saucebot)
 
 An open-source Twitter bot that utilizes the SauceNao API to find the source of images or anime screencaps.
 https://saucenao.com/
