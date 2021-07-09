@@ -2,7 +2,7 @@
 
 # twitter-saucenao
 
-[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/fujimakoto/twitter-saucenao/latest)](https://github.com/FujiMakoto/twitter-saucenao/releases) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=ncloc)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b544d5da65234268a434f05797bc5680)](https://www.codacy.com/manual/makoto-github/twitter-saucenao?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FujiMakoto/twitter-saucenao&amp;utm_campaign=Badge_Grade)
+![GitHub contributors](https://img.shields.io/github/contributors/fujimakoto/twitter-saucenao) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=ncloc)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=FujiMakoto_twitter-saucenao&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=FujiMakoto_twitter-saucenao)
 
 An open-source Twitter bot that utilizes the SauceNao API to find the source of images or anime screencaps.
 https://saucenao.com/
