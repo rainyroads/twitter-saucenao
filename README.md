@@ -46,8 +46,8 @@ Twitter placed a shadowban on our account in an attempt to prevent us from maint
 # Documentation
 
 Setting up your own instance of the Twitter SauceNao bot is pretty straightforward. All you need to do is copy the
-example configuration file, [**
-config.example.ini**](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**,
+example configuration file, [
+config.example.ini](https://github.com/FujiMakoto/twitter-saucenao/blob/master/config.example.ini), to **config.ini**,
 then set the configuration variables accordingly.
 
 ### Getting started
