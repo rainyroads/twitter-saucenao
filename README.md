@@ -13,11 +13,7 @@ Support for the official Twitter account has been discontinued. The platform pro
 
 ## (05/11/2021) Shadowbans and DMCA abuse
 
-Twitter has recently engaged in shadowbanning the SauceNaoPls account in response to us actively working to expose Twitter's broken and abusive copyright system.
-
-It seems rather than deal with the rampant abuse, Twitter has decided it’s easier to silently censor the one bot on the platform that tries to credit artists.
-
-At the moment, many legitimate artist accounts are being closed because of false/malicious copyright complaints by bad actors attempting to blackmail these people into paying them to regain access to their account.
+Many legitimate artist accounts on Twitter are being closed because of false/malicious copyright complaints by bad actors attempting to blackmail these people into paying them to regain access to their account.
 
 Examples:
 
