@@ -9,38 +9,7 @@ https://saucenao.com/
 
 # Official Twitter account
 
-Support for the official Twitter account has been discontinued. The platform provides no way to scale bots that need more than 2,400 tweets/day. I've tried to work around this repeatedly to no avail.
-
-## (05/11/2021) Shadowbans and DMCA abuse
-
-Many legitimate artist accounts on Twitter are being closed because of false/malicious copyright complaints by bad actors attempting to blackmail these people into paying them to regain access to their account.
-
-Examples:
-
-* https://twitter.com/yueko___/status/1391474502186377217
-* https://twitter.com/RyaiArt/status/1364745241350316032
-* https://twitter.com/JackaryDraws/status/1390374876205174789
-* https://twitter.com/orangesekai1/status/1394725794413387777
-
-Archives:
-
-* https://archive.is/0WkQf
-* https://archive.is/9p6Jq
-* https://archive.is/jQIQm
-* https://archive.is/ridon
-
-Legitimate artist accounts are being closed with only a handful of false DMCA complaints being filed against them.
-
-At the same time, Twitter is actively refusing to take action against accounts which only exist to steal other people’s
-art and try to profit off it.
-
-Our hands-on experience shows legitimate artists trying to protect their own intellectual property must file up to **30
-or more** separate DMCA reports against actual bad actors to get any action taken.
-
-On top of all this, as soon as we started offering a service to help these artists submit takedowns against art thieves,
-Twitter placed a shadowban on our account in an attempt to prevent us from maintaining contact with these artists.
-
-**If you are an artist and you have been falsely banned by Twitter over malicious DMCA strikes, please contact me on here. I will do everything in my power to help you recover your account without needing to expose your personal information to any nefarious parties attempting to extort you.**
+[@saucenaopls](https://twitter.com/saucenaopls)
 
 
 # Documentation
