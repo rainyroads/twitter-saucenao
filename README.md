@@ -7,10 +7,6 @@
 An open-source Twitter bot that utilizes the SauceNao API to find the source of images or anime screencaps.
 https://saucenao.com/
 
-# Official Twitter account
-
-[@saucenaopls](https://twitter.com/saucenaopls)
-
 
 # Documentation
 
