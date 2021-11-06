@@ -117,7 +117,7 @@ class SauceManager:
             return None
 
         try:
-            tracemoe_sauce = await tracemoe.search(path_or_fh, is_url=is_url)
+            tracemoe_sauce = await tracemoe.search(path_or_fh, is_url=is_url, anilist_id=sauce.anilist_id)
         except ClientResponseError as e:
             if e.status == 503:
                 self._log.warning("Tracemoe is not accepting API queries right now; aborting search query")
@@ -127,18 +127,18 @@ class SauceManager:
         except Exception:
             self._log.exception("Tracemoe returned an exception; aborting search query")
             return None
-        if not tracemoe_sauce.get('docs'):
+        if not tracemoe_sauce.get('result'):
             self._log.info("Tracemoe returned no results")
             return None
 
         # Make sure our search results match
         if await sauce.load_ids():
-            if sauce.anilist_id != tracemoe_sauce['docs'][0]['anilist_id']:
-                self._log.info(f"saucenao and trace.moe provided mismatched anilist entries: `{sauce.anilist_id}` vs. `{tracemoe_sauce['docs'][0]['anilist_id']}`")
+            if sauce.anilist_id != tracemoe_sauce['result'][0]['anilist']:
+                self._log.info(f"saucenao and trace.moe provided mismatched anilist entries: `{sauce.anilist_id}` vs. `{tracemoe_sauce['result'][0]['anilist']}`")
                 return None
 
             self._log.info(f'Downloading video preview for AniList entry {sauce.anilist_id} from trace.moe')
-            tracemoe_preview = await tracemoe.video_preview_natural(tracemoe_sauce)
+            tracemoe_preview = await tracemoe.video_preview(tracemoe_sauce)
             return tracemoe_preview
 
         return None
