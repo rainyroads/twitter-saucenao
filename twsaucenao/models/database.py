@@ -192,7 +192,7 @@ class TweetSauceCache(db.Entity):
                 sauce_header=sauce.header,
                 sauce_data=sauce.data,
                 sauce_class=type(sauce).__name__,
-                sauce_index=sauce.index,
+                sauce_index=sauce.index or f"Unknown index ({sauce.index_id})",
                 trigger=trigger,
                 media_id=media_id or 0,
                 created_at=int(time.time())
